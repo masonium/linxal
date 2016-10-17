@@ -1,0 +1,12 @@
+[package]
+name = "rula"
+version = "0.1.0"
+authors = ["Mason Smith <masonium@gmail.com>"]
+
+[dependencies]
+ndarray = "0.6"
+lapack = "0.11"
+
+[dependencies.blas]
+version = "0.15"
+features = ["netlib"]
