@@ -9,4 +9,3 @@ lapack = "0.11"
 
 [dependencies.blas]
 version = "0.15"
-features = ["netlib"]
