@@ -1,20 +1,7 @@
 //! Trait for comptuting eigenvalues
 use ndarray::{ArrayBase, Array, DataMut, Data, Ix};
-use lapack::{c32};
 use lapack::c::{ssyev, Layout};
-
-pub enum EigenError {
-    Success,
-    BadInput,
-    BadParameter(i32),
-    Failed
-}
-
-pub enum ComputeVectors {
-    Left,
-    Right,
-    Both
-}
+use super::types::{EigenError};
 
 pub trait SymEigen : Sized
 {
@@ -27,8 +14,6 @@ pub trait SymEigen : Sized
 
 impl SymEigen for f32 {
     fn values_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>) -> Result<Array<Self, Ix>, EigenError> where D:DataMut<Elem=Self> {
-        let empty = [0.0];
-
         let layout = if mat.is_standard_layout() { Layout::RowMajor } else { Layout::ColumnMajor };
         let n = mat.dim().0 as i32;
 
