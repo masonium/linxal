@@ -1,4 +1,5 @@
-//! Trait for comptuting eigenvalues
+//! Compute eigenvalues and eigenvectors of general matrices.
+
 use ndarray::{ArrayBase, Array, DataMut, Data, Ix};
 use lapack::{c32, c64};
 use lapack::c::{sgeev, dgeev, Layout};
@@ -11,7 +12,15 @@ pub trait Eigen : Sized
     /// Return the eigenvvalues of a general matrix.
     fn values_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>) -> Result<Array<Self::Eigv, Ix>, EigenError> where D: DataMut<Elem=Self>;
 
-    //// Return the eigenvalues and, optionally, the eigenvectors of a general matrix.
+    /// Return the eigenvalues and, optionally, the right eigenvectors of a general matrix.
+    ///
+    /// # Returns
+    ///
+    /// On success, the `Result` contains a 2-tuple. The first value
+    /// is the eigenvalues. The second is an `Option`, containing the
+    /// corresponding eigenvectors as a matrix iff `with_vectors` was
+    /// set to `true`.
+    ///
     fn values_vectors_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, with_vectors: bool) ->
         Result<(Array<Self::Eigv, Ix>, Option<Array<Self, (Ix, Ix)>>), EigenError>
                 where D:DataMut<Elem=Self>;
