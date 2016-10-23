@@ -2,7 +2,10 @@ pub extern crate ndarray;
 pub extern crate lapack;
 
 pub mod eigenvalues;
+pub mod svd;
+pub mod matrix;
 
+pub use svd::general::SVD;
 pub use eigenvalues::generic::Eigen;
 pub use eigenvalues::symmetric::SymEigen;
 
