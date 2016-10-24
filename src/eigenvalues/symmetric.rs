@@ -1,6 +1,6 @@
 //! Compute eigenvalues and eigenvectors of symmetric matrices.
 
-use ndarray::{ArrayBase, Array, DataMut, Data, Ix};
+use ndarray::{ArrayBase, Array, DataMut, Data, Ix, Ix2};
 use lapack::c::{ssyev, dsyev, cheev, zheev};
 use lapack::{c32, c64};
 use super::types::{Solution, EigenError};
@@ -16,7 +16,7 @@ pub trait SymEigen : Sized
     /// The input matrix is mutated as part of the computation. Use
     /// [`.values()`](#tymethod.values) if you need to preserve the original
     /// matrix.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, uplo: Symmetric, with_vectors: bool) ->
+    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
         Result<Array<Self::SingularValue, Ix>, EigenError> where D: DataMut<Elem=Self>;
 
     /// Return the eigenvalues of a symmetric matrix.
@@ -24,7 +24,7 @@ pub trait SymEigen : Sized
     /// # Remarks
     ///
     /// The input matrix is copied before the calculation takes place.
-    fn compute<D>(mat: &ArrayBase<D, (Ix, Ix)>, uplo: Symmetric, with_vectors: bool) ->
+    fn compute<D>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
         Result<Self::Solution, EigenError> where D: Data<Elem=Self>;
 }
 
@@ -34,7 +34,7 @@ macro_rules! impl_sym_eigen {
             type SingularValue = $eigen_type;
             type Solution = Solution<Self, Self::SingularValue>;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, uplo: Symmetric, with_vectors: bool) ->
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
                 Result<Array<Self::SingularValue, Ix>, EigenError> where D: DataMut<Elem=Self>
             {
                 let n = mat.dim().0 as i32;
@@ -60,7 +60,7 @@ macro_rules! impl_sym_eigen {
             }
 
 
-            fn compute<D>(mat: &ArrayBase<D, (Ix, Ix)>, uplo: Symmetric, with_vectors: bool) -> Result<Self::Solution, EigenError> where D: Data<Elem=Self> {
+            fn compute<D>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) -> Result<Self::Solution, EigenError> where D: Data<Elem=Self> {
                 let vec: Vec<Self> = mat.iter().cloned().collect();
                 let mut new_mat = Array::from_shape_vec(mat.dim(), vec).unwrap();
                 Self::compute_mut(&mut new_mat, uplo, with_vectors).map(|values| {

@@ -1,4 +1,5 @@
 use ndarray::prelude::*;
+use ndarray::Ix2;
 use ndarray::DataMut;
 use lapack::c::{sgesvd, sgesdd, dgesvd, dgesdd, cgesvd, cgesdd, zgesvd, zgesdd};
 use lapack::{c32, c64};
@@ -41,14 +42,14 @@ pub trait SVD: Sized + Clone {
     /// assert!(r.is_ok());
     ///
     /// let vals = r.ok().unwrap().values;
-    fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<Self, Self::SingularValue>, SVDError>
+    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<Self, Self::SingularValue>, SVDError>
         where D: DataMut<Elem=Self>;
 
     /// Comptue the singular value decomposition of a matrix.
     ///
     /// Similar to `compute`, but the values are copied
     /// beforehand. leaving the original matrix un-modified.
-    fn compute<D>(mat: &ArrayBase<D, (Ix, Ix)>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<Self, Self::SingularValue>, SVDError>
+    fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<Self, Self::SingularValue>, SVDError>
         where D: DataMut<Elem=Self> {
         let vec: Vec<Self> = mat.iter().cloned().collect();
         let mut m = Array::from_shape_vec(mat.dim(), vec).unwrap();
@@ -61,7 +62,7 @@ macro_rules! impl_svd {
         impl SVD for $impl_type {
             type SingularValue = $sv_type;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<$impl_type, $sv_type>, SVDError>
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<$impl_type, $sv_type>, SVDError>
                 where D: DataMut<Elem=Self> {
 
                 let (m, n) = mat.dim();
