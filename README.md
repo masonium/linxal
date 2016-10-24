@@ -9,7 +9,7 @@ algebra routines with `rust-ndarray` as inputs and outputs.
   result.
 - Ease of Use: `rula` will provide a consistent interface and should
   require minimal setup. Most routine should be high-level and should
-  require little-to-no knowledge of the underlying LAPACK routines.
+  require no knowledge of the underlying LAPACK routines.
 - Speed
 
 ## Goals ##
