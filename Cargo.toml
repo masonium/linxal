@@ -3,6 +3,13 @@ name = "rula"
 version = "0.1.0"
 authors = ["Mason Smith <masonium@gmail.com>"]
 
+description = "Linear Algebra package with rust-ndarray interface"
+
+readme = "README.md"
+
+license = "MIT"
+keywords = ["linear algebra", "ndarray", "matrix", "vector"]
+
 [dependencies]
 ndarray = "0.6"
 lapack = "0.11"
