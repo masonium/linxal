@@ -78,7 +78,7 @@ macro_rules! impl_svd {
                 let job_u = if compute_u { b'A' } else { b'N' };
                 let job_vt = if compute_vt { b'A' } else { b'N' };
 
-                let info = match method.unwrap_or(SVDMethod::DivideAndConquer) {
+                let info = match method.unwrap_or(SVDMethod::Normal) {
                     SVDMethod::Normal => {
                         $svd_func(layout, job_u, job_vt, m as i32, n as i32, slice,
                                   lda as i32, s.as_slice_mut().expect("bad s implementation"),

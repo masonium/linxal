@@ -12,6 +12,7 @@ pub struct Solution<IV: Sized, SV: Sized> {
 }
 
 /// An Error resulting from SVD::compute.
+#[derive(Debug)]
 pub enum SVDError {
     Unconverged,
     IllegalParameter(i32),
