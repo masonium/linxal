@@ -1,32 +1,22 @@
 //! Compute eigenvalues and eigenvectors of general matrices.
-
 use ndarray::{ArrayBase, Array, DataMut, Data, Ix};
 use lapack::{c32, c64};
 use lapack::c::{sgeev, dgeev, Layout};
-use super::types::{EigenError};
+use super::types::{EigenError, Solution};
 
 pub trait Eigen : Sized
 {
     type Eigv;
+    type Solution;
 
-    /// Return the eigenvvalues of a general matrix.
-    fn values_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>) -> Result<Array<Self::Eigv, Ix>, EigenError> where D: DataMut<Elem=Self>;
+    /// Return the eigenvalues and, optionally, the left and/or right eigenvectors of a general matrix.
+    ///
+    /// The entries in the input matrix `mat` are modified when calculating the eigenvalues.
+    fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, compute_left: bool, compute_right: bool) ->
+        Result<Self::Solution, EigenError> where D:DataMut<Elem=Self>;
 
-    /// Return the eigenvalues and, optionally, the right eigenvectors of a general matrix.
-    ///
-    /// # Returns
-    ///
-    /// On success, the `Result` contains a 2-tuple. The first value
-    /// is the eigenvalues. The second is an `Option`, containing the
-    /// corresponding eigenvectors as a matrix iff `with_vectors` was
-    /// set to `true`.
-    ///
-    fn values_vectors_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, with_vectors: bool) ->
-        Result<(Array<Self::Eigv, Ix>, Option<Array<Self, (Ix, Ix)>>), EigenError>
-                where D:DataMut<Elem=Self>;
-
-    /// Return the eigenvvalues of a general matrix.
-    fn values<D>(mat: &ArrayBase<D, (Ix, Ix)>) -> Result<Array<Self::Eigv, Ix>, EigenError> where D: Data<Elem=Self>;
+    /// Return the eigenvvalues and, optionally, the eigenvectors of a general matrix.
+    fn compute<D>(mat: &ArrayBase<D, (Ix, Ix)>, compute_left: bool, compute_right: bool) -> Result<Self::Solution, EigenError> where D: Data<Elem=Self>;
 }
 
 macro_rules! impl_eigen_real {
@@ -34,33 +24,40 @@ macro_rules! impl_eigen_real {
         impl Eigen for $impl_type {
 
             type Eigv = $eigv_type;
+            type Solution = Solution<$impl_type, $eigv_type>;
 
-            fn values_vectors_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, with_vectors: bool) ->
-                Result<(Array<Self::Eigv, Ix>, Option<Array<Self, (Ix, Ix)>>), EigenError>
+            fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, compute_left: bool, compute_right: bool) ->
+                Result<Self::Solution, EigenError>
                 where D:DataMut<Elem=Self> {
 
-                let mut vl = [0.0 as Self];
-                let mut vr = Array::default(if with_vectors { mat.dim() } else { (0, 0) });
+                let mut vl = Array::default(if compute_left { mat.dim() } else { (0, 0) });
+                let mut vr = Array::default(if compute_right { mat.dim() } else { (0, 0) });
 
                 let layout = if mat.is_standard_layout() { Layout::RowMajor } else { Layout::ColumnMajor };
                 let n = mat.dim().0 as i32;
 
                 let data_slice = match mat.as_slice_memory_order_mut() {
                     Some(s) => s,
-                    None => return Err(EigenError::BadInput)
+                    None => return Err(EigenError::BadLayout)
                 };
 
                 let mut values_real_imag = vec![0.0; 2 * n as usize];
                 let (mut values_real, mut values_imag) = values_real_imag.split_at_mut(n as usize);
 
-                let vr_opt = (if with_vectors {'V'} else {'N'}) as u8;
+                let vl_opt = (if compute_left {'V'} else {'N'}) as u8;
+                let vr_opt = (if compute_right {'V'} else {'N'}) as u8;
 
-                let info = $func(layout, 'N' as u8, vr_opt, n, data_slice,
-                                 n, &mut values_real, &mut values_imag, &mut vl, n, vr.as_slice_mut().expect("just created."), n);
+                let info = $func(layout, vl_opt, vr_opt, n, data_slice,
+                                 n, &mut values_real, &mut values_imag,
+                                 vl.as_slice_mut().unwrap(), n,
+                                 vr.as_slice_mut().unwrap(), n);
 
                 if info  == 0 {
                     let vals: Vec<_> = values_real.iter().zip(values_imag.iter()).map(|(x, y)| Self::Eigv::new(*x, *y)).collect();
-                    Ok((ArrayBase::from_vec(vals), if with_vectors { Some(vr) } else { None }))
+                    Ok(Solution {
+                        values: ArrayBase::from_vec(vals),
+                        left_vectors: if compute_left { Some(vl) } else { None },
+                        right_vectors: if compute_right { Some(vr) } else { None }})
                 } else if info < 0 {
                     Err(EigenError::BadParameter(-info))
                 } else {
@@ -68,20 +65,10 @@ macro_rules! impl_eigen_real {
                 }
             }
 
-            fn values_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>) -> Result<Array<Self::Eigv, Ix>, EigenError>
-                where D: DataMut<Elem=Self> {
-
-                match Self::values_vectors_mut(mat, false) {
-                    Err(e) => Err(e),
-                    Ok((eigv, _)) => Ok(eigv)
-                }
-            }
-
-
-            fn values<D>(mat: &ArrayBase<D, (Ix, Ix)>) -> Result<Array<Self::Eigv, Ix>, EigenError> where D: Data<Elem=Self> {
+            fn compute<D>(mat: &ArrayBase<D, (Ix, Ix)>, compute_left: bool, compute_right: bool) -> Result<Self::Solution, EigenError> where D: Data<Elem=Self> {
                 let vec: Vec<Self> = mat.iter().cloned().collect();
                 let mut new_mat = Array::from_shape_vec(mat.dim(), vec).unwrap();
-                Self::values_mut(&mut new_mat)
+                Self::compute_mut(&mut new_mat, compute_left, compute_right)
             }
         })
 
@@ -99,7 +86,7 @@ mod tests {
     fn try_eig() {
         let mut m = arr2(&[[1.0 as f32, 2.0], [2.0, 1.0]]);
 
-        let r = Eigen::values_vectors_mut(&mut m, true);
+        let r = Eigen::compute_mut(&mut m, false, true);
         assert!(r.is_ok());
     }
 

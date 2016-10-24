@@ -13,13 +13,14 @@ pub enum Symmetric {
     Lower =  b'L'
 }
 
+#[macro_export]
 macro_rules! assert_in_tol {
     ($e1:expr, $e2:expr, $tol:expr) => (
         match (&$e1, &$e2, $tol) {
             (x, y, tol) => {
                 assert_eq!(x.dim(), y.dim());
-                for (i, a), b in x.indexed_iter().zip(e2.iter()).enumerate() {
-                    if (*a-*b).abs() > $tol {
+                for ((i, a), b) in x.indexed_iter().zip(y.iter()) {
+                    if ((*a-*b) as f64).abs() > tol as f64 {
                         panic!(format!("Elements at {:?} not within tolerance: |{} - {}| > {}",
                                        i, a, b, tol));
                     }
