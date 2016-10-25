@@ -26,22 +26,6 @@ pub trait SVD: Sized + Clone {
     /// singular vectors. The left vectors (via the matrix `u`) are
     /// returned iff `compute_u` is true, and similarly for `vt` and
     /// `compute_vt`.
-    ///
-    /// # Examples
-    /// ```rust
-    /// use rula::prelude::*;
-    /// use rula::nd::{arr1, arr2};
-    /// let mut m = arr2(&[[8.79, 9.93, 9.83, 5.45, 3.16],
-    /// [6.11, 6.91, 5.04, -0.27, 7.98],
-    /// [-9.15, -7.93, 4.86, 4.85, 3.01],
-    /// [9.57, 1.64, 8.83, 0.74, 5.80],
-    /// [-3.49, 4.02, 9.80, 10.00, 4.27],
-    /// [ 9.84, 0.15, -8.99, -6.02, -5.31]]);
-    ///
-    /// let r = SVD::compute_mut(&mut m, false, false, None);
-    /// assert!(r.is_ok());
-    ///
-    /// let vals = r.ok().unwrap().values;
     fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<Self, Self::SingularValue>, SVDError>
         where D: DataMut<Elem=Self>;
 
