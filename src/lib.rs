@@ -1,3 +1,7 @@
+//! # rula
+//!
+//! `rula` is a linear algebra package on top of `ndarray`.
+
 extern crate ndarray;
 extern crate lapack;
 

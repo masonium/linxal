@@ -1,17 +1,12 @@
 use ndarray::prelude::*;
 
+/// Errors from an eigenvalue problem.
 #[derive(Debug)]
 pub enum EigenError {
     NotSquare,
     BadLayout,
     BadParameter(i32),
     Failed
-}
-
-pub enum ComputeVectors {
-    Left,
-    Right,
-    Both
 }
 
 /// Solution to an eigenvalue problem..

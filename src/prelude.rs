@@ -1,5 +1,6 @@
 pub use svd::general::SVD;
-pub use svd::types::{Solution, SVDError};
-pub use eigenvalues::generic::Eigen;
+pub use svd::types::{SVDError};
+pub use eigenvalues::general::Eigen;
+pub use eigenvalues::types::{EigenError};
 pub use eigenvalues::symmetric::SymEigen;
 pub use matrix::Symmetric;
