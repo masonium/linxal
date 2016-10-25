@@ -3,7 +3,7 @@ use ndarray::Ix2;
 use ndarray::DataMut;
 use lapack::c::{sgesvd, sgesdd, dgesvd, dgesdd, cgesvd, cgesdd, zgesvd, zgesdd};
 use lapack::{c32, c64};
-use super::types::{Solution, SVDError};
+use super::types::{SVDSolution, SVDError};
 use matrix::{slice_and_layout_mut, matrix_with_layout};
 use std::cmp;
 
@@ -14,6 +14,7 @@ pub enum SVDMethod {
 
 pub trait SVD: Sized + Clone {
     type SingularValue;
+    type Solution;
 
     /// Compute the singular value decomposition of a matrix.
     ///
@@ -26,14 +27,14 @@ pub trait SVD: Sized + Clone {
     /// singular vectors. The left vectors (via the matrix `u`) are
     /// returned iff `compute_u` is true, and similarly for `vt` and
     /// `compute_vt`.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<Self, Self::SingularValue>, SVDError>
+    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Self::Solution, SVDError>
         where D: DataMut<Elem=Self>;
 
     /// Comptue the singular value decomposition of a matrix.
     ///
     /// Similar to `compute`, but the values are copied
     /// beforehand. leaving the original matrix un-modified.
-    fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<Self, Self::SingularValue>, SVDError>
+    fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Self::Solution, SVDError>
         where D: DataMut<Elem=Self> {
         let vec: Vec<Self> = mat.iter().cloned().collect();
         let mut m = Array::from_shape_vec(mat.dim(), vec).unwrap();
@@ -44,9 +45,10 @@ pub trait SVD: Sized + Clone {
 macro_rules! impl_svd {
     ($impl_type:ident, $sv_type:ident, $svd_func:ident, $sdd_func:ident) => (
         impl SVD for $impl_type {
+            type Solution = SVDSolution<$impl_type, $sv_type>;
             type SingularValue = $sv_type;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Solution<$impl_type, $sv_type>, SVDError>
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Self::Solution, SVDError>
                 where D: DataMut<Elem=Self> {
 
                 let (m, n) = mat.dim();
@@ -84,7 +86,7 @@ macro_rules! impl_svd {
 
                 match info {
                     0 => {
-                        Ok(Solution {
+                        Ok(SVDSolution {
                             values: s,
                             left_vectors: if compute_u { Some(u) } else { None },
                             right_vectors: if compute_vt { Some(vt) } else { None }

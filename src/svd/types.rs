@@ -5,7 +5,7 @@ use ndarray::prelude::*;
 /// A singular value decomposition solution includes singular values
 /// and, optionally, the left and right singular vectors, stored as a
 /// mtrix.
-pub struct Solution<IV: Sized, SV: Sized> {
+pub struct SVDSolution<IV: Sized, SV: Sized> {
     pub values: Array<SV, Ix>,
     pub left_vectors: Option<Array<IV, (Ix, Ix)>>,
     pub right_vectors: Option<Array<IV, (Ix, Ix)>>
