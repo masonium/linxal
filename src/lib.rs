@@ -9,4 +9,6 @@ pub mod matrix;
 
 pub mod eigenvalues;
 pub mod svd;
+pub mod types;
+
 pub mod prelude;
