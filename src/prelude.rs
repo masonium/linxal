@@ -1,4 +1,4 @@
-pub use svd::general::SVD;
+pub use svd::general::{SVD};
 pub use svd::types::{SVDError};
 pub use eigenvalues::general::Eigen;
 pub use eigenvalues::types::{EigenError};

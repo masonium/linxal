@@ -1,3 +1,5 @@
+//! Solve singular value decomposition (SVD) of arbitrary matrices.
+
 use ndarray::prelude::*;
 use ndarray::Ix2;
 use ndarray::DataMut;
@@ -7,7 +9,8 @@ use super::types::{SVDSolution, SVDError};
 use matrix::{slice_and_layout_mut, matrix_with_layout};
 use std::cmp;
 
-pub enum SVDMethod {
+#[derive(Debug, PartialEq)]
+enum SVDMethod {
     Normal,
     DivideAndConquer
 }
@@ -27,20 +30,39 @@ pub trait SVD: Sized + Clone {
     /// singular vectors. The left vectors (via the matrix `u`) are
     /// returned iff `compute_u` is true, and similarly for `vt` and
     /// `compute_vt`.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Self::Solution, SVDError>
+    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool) -> Result<Self::Solution, SVDError>
         where D: DataMut<Elem=Self>;
 
     /// Comptue the singular value decomposition of a matrix.
     ///
     /// Similar to `compute`, but the values are copied
     /// beforehand. leaving the original matrix un-modified.
-    fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Self::Solution, SVDError>
+    fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool) -> Result<Self::Solution, SVDError>
         where D: DataMut<Elem=Self> {
         let vec: Vec<Self> = mat.iter().cloned().collect();
         let mut m = Array::from_shape_vec(mat.dim(), vec).unwrap();
-        Self::compute_mut(&mut m, compute_u, compute_vt, method)
+        Self::compute_mut(&mut m, compute_u, compute_vt)
     }
 }
+
+/// Choose a method based on the problem.
+fn select_svd_method(d: &Ix2, compute_either: bool) -> SVDMethod{
+    let mx = cmp::max(d.0, d.1);
+
+    // When we're computing one of them singular vector sets, we have
+    // to compute both with divide and conquer. So, we're bound by the
+    // maximum size of the array.
+    if compute_either {
+        if mx < 2000 {
+            SVDMethod::Normal
+        } else {
+            SVDMethod::DivideAndConquer
+        }
+    } else {
+        SVDMethod::DivideAndConquer
+    }
+}
+
 
 macro_rules! impl_svd {
     ($impl_type:ident, $sv_type:ident, $svd_func:ident, $sdd_func:ident) => (
@@ -48,17 +70,24 @@ macro_rules! impl_svd {
             type Solution = SVDSolution<$impl_type, $sv_type>;
             type SingularValue = $sv_type;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool, method: Option<SVDMethod>) -> Result<Self::Solution, SVDError>
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, mut compute_u: bool, mut compute_vt: bool) -> Result<Self::Solution, SVDError>
                 where D: DataMut<Elem=Self> {
 
-                let (m, n) = mat.dim();
+                let dim = mat.dim();
+                let (m, n) = dim;
                 let mut s = Array::default(cmp::min(m, n));
-                let mut superb = Array::default(cmp::min(m, n) - 2);
 
                 let (slice, layout, lda) = match slice_and_layout_mut(mat) {
                     Some(x) => x,
                     None => return Err(SVDError::BadLayout)
                 };
+
+                let compute_either = compute_u || compute_vt;
+                let method = select_svd_method(&dim, compute_either);
+                if method == SVDMethod::DivideAndConquer {
+                    compute_u = compute_either;
+                    compute_vt = compute_either;
+                }
 
                 let mut u = matrix_with_layout(if compute_u { (m, m) } else { (0, 0) }, layout);
                 let mut vt = matrix_with_layout(if compute_vt { (n, n) } else { (0, 0) }, layout);
@@ -66,8 +95,10 @@ macro_rules! impl_svd {
                 let job_u = if compute_u { b'A' } else { b'N' };
                 let job_vt = if compute_vt { b'A' } else { b'N' };
 
-                let info = match method.unwrap_or(SVDMethod::Normal) {
+                let info = match method {
                     SVDMethod::Normal => {
+                        let mut superb = Array::default(cmp::min(m, n) - 2);
+
                         $svd_func(layout, job_u, job_vt, m as i32, n as i32, slice,
                                   lda as i32, s.as_slice_mut().expect("bad s implementation"),
                                   u.as_slice_mut().expect("bad u implementation"), m as i32,
