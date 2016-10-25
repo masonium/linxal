@@ -1,6 +1,7 @@
 #![macro_use]
 
-use ndarray::{DataMut, ArrayBase, Ix, Ixs};
+use ndarray::prelude::*;
+use ndarray::{Ix2, DataMut};
 use lapack::c::{Layout};
 use std::slice;
 
@@ -29,6 +30,18 @@ macro_rules! assert_in_tol {
             }
         })
 }
+
+/// Return an array with the specified dimensions and layout.
+///
+/// This function is used internally to ensure that
+pub fn matrix_with_layout<T: Default>(d: Ix2, layout: Layout) -> Array<T, Ix2> {
+    Array::default(match layout {
+        Layout::RowMajor => d.into(),
+        Layout::ColumnMajor => d.f()
+    })
+}
+
+
 
 /// Return true if an array can be used as a matrix input.
 ///

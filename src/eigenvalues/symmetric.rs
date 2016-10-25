@@ -37,7 +37,12 @@ macro_rules! impl_sym_eigen {
             fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
                 Result<Array<Self::SingularValue, Ix>, EigenError> where D: DataMut<Elem=Self>
             {
-                let n = mat.dim().0 as i32;
+                let dim = mat.dim();
+                if dim.0 != dim.1 {
+                    return Err(EigenError::NotSquare);
+                }
+
+                let n = dim.0 as i32;
 
                 let (mut data_slice, layout, ld) = match slice_and_layout_mut(mat) {
                     Some(x) => x,

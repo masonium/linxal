@@ -1,8 +1,9 @@
 //! Compute eigenvalues and eigenvectors of general matrices.
-use ndarray::{ArrayBase, Array, DataMut, Data, Ix};
+use ndarray::prelude::*;
+use ndarray::{Data, DataMut, Ix2};
 use lapack::{c32, c64};
 use lapack::c::{sgeev, dgeev, cgeev, zgeev};
-use matrix::slice_and_layout_mut;
+use matrix::{matrix_with_layout, slice_and_layout_mut};
 use super::types::{EigenError, Solution};
 
 pub trait Eigen : Sized + Clone
@@ -13,11 +14,11 @@ pub trait Eigen : Sized + Clone
     /// Return the eigenvalues and, optionally, the left and/or right eigenvectors of a general matrix.
     ///
     /// The entries in the input matrix `mat` are modified when calculating the eigenvalues.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, compute_left: bool, compute_right: bool) ->
+    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_left: bool, compute_right: bool) ->
         Result<Self::Solution, EigenError> where D:DataMut<Elem=Self>;
 
     /// Return the eigenvvalues and, optionally, the eigenvectors of a general matrix.
-    fn compute<D>(mat: &ArrayBase<D, (Ix, Ix)>, compute_left: bool, compute_right: bool) -> Result<Self::Solution, EigenError> where D: Data<Elem=Self> {
+    fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_left: bool, compute_right: bool) -> Result<Self::Solution, EigenError> where D: Data<Elem=Self> {
         let vec: Vec<Self> = mat.iter().cloned().collect();
         let mut new_mat = Array::from_shape_vec(mat.dim(), vec).unwrap();
         Self::compute_mut(&mut new_mat, compute_left, compute_right)
@@ -32,20 +33,23 @@ macro_rules! impl_eigen_real {
             type Eigv = $eigv_type;
             type Solution = Solution<$impl_type, $eigv_type>;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, compute_left: bool, compute_right: bool) ->
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_left: bool, compute_right: bool) ->
                 Result<Self::Solution, EigenError>
                 where D:DataMut<Elem=Self> {
 
+                let dim = mat.dim();
+                if dim.0 != dim.1 {
+                    return Err(EigenError::NotSquare);
+                }
                 let n = mat.dim().0 as i32;
-
-
-                let mut vl = Array::default(if compute_left { mat.dim() } else { (0, 0) });
-                let mut vr = Array::default(if compute_right { mat.dim() } else { (0, 0) });
 
                 let (data_slice, layout, ld) = match slice_and_layout_mut(mat) {
                     Some(s) => s,
                     None => return Err(EigenError::BadLayout)
                 };
+
+                let mut vl = matrix_with_layout(if compute_left { dim } else { (0, 0) }, layout);
+                let mut vr = matrix_with_layout(if compute_right { dim } else { (0, 0) }, layout);
 
                 let mut values_real_imag = vec![0.0; 2 * n as usize];
                 let (mut values_real, mut values_imag) = values_real_imag.split_at_mut(n as usize);
@@ -58,7 +62,7 @@ macro_rules! impl_eigen_real {
                                  vl.as_slice_mut().unwrap(), n,
                                  vr.as_slice_mut().unwrap(), n);
 
-                if info  == 0 {
+                if info == 0 {
                     let vals: Vec<_> = values_real.iter().zip(values_imag.iter()).map(|(x, y)| Self::Eigv::new(*x, *y)).collect();
                     Ok(Solution {
                         values: ArrayBase::from_vec(vals),
@@ -84,20 +88,24 @@ macro_rules! impl_eigen_complex {
             type Eigv = $impl_type;
             type Solution = Solution<$impl_type, $impl_type>;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, (Ix, Ix)>, compute_left: bool, compute_right: bool) ->
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_left: bool, compute_right: bool) ->
                 Result<Self::Solution, EigenError>
                 where D:DataMut<Elem=Self> {
 
-                let n = mat.dim().0 as i32;
+                let dim = mat.dim();
+                if dim.0 != dim.1 {
+                    return Err(EigenError::NotSquare);
+                }
 
-
-                let mut vl = Array::default(if compute_left { mat.dim() } else { (0, 0) });
-                let mut vr = Array::default(if compute_right { mat.dim() } else { (0, 0) });
+                let n = dim.0 as i32;
 
                 let (data_slice, layout, ld) = match slice_and_layout_mut(mat) {
                     Some(s) => s,
                     None => return Err(EigenError::BadLayout)
                 };
+
+                let mut vl = matrix_with_layout(if compute_left { dim } else { (0, 0) }, layout);
+                let mut vr = matrix_with_layout(if compute_right { dim } else { (0, 0) }, layout);
 
                 let mut values = Array::default(n as Ix);
 
@@ -135,7 +143,8 @@ mod tests {
 
     #[test]
     fn try_eig() {
-        let mut m = arr2(&[[1.0 as f32, 2.0], [2.0, 1.0]]);
+        let mut m = arr2(&[[1.0 as f32, 2.0],
+                           [2.0, 1.0]]);
 
         let r = Eigen::compute_mut(&mut m, false, true);
         assert!(r.is_ok());

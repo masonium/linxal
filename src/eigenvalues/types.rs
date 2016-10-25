@@ -2,7 +2,7 @@ use ndarray::prelude::*;
 
 #[derive(Debug)]
 pub enum EigenError {
-    Success,
+    NotSquare,
     BadLayout,
     BadParameter(i32),
     Failed

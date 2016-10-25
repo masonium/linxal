@@ -4,7 +4,7 @@ use ndarray::DataMut;
 use lapack::c::{sgesvd, sgesdd, dgesvd, dgesdd, cgesvd, cgesdd, zgesvd, zgesdd};
 use lapack::{c32, c64};
 use super::types::{Solution, SVDError};
-use super::super::matrix::slice_and_layout_mut;
+use matrix::{slice_and_layout_mut, matrix_with_layout};
 use std::cmp;
 
 pub enum SVDMethod {
@@ -66,8 +66,6 @@ macro_rules! impl_svd {
                 where D: DataMut<Elem=Self> {
 
                 let (m, n) = mat.dim();
-                let mut u = Array::default(if compute_u { (m, m) } else { (0, 0) });
-                let mut vt = Array::default(if compute_vt { (n, n) } else { (0, 0) });
                 let mut s = Array::default(cmp::min(m, n));
                 let mut superb = Array::default(cmp::min(m, n) - 2);
 
@@ -75,6 +73,9 @@ macro_rules! impl_svd {
                     Some(x) => x,
                     None => return Err(SVDError::BadLayout)
                 };
+
+                let mut u = matrix_with_layout(if compute_u { (m, m) } else { (0, 0) }, layout);
+                let mut vt = matrix_with_layout(if compute_vt { (n, n) } else { (0, 0) }, layout);
 
                 let job_u = if compute_u { b'A' } else { b'N' };
                 let job_vt = if compute_vt { b'A' } else { b'N' };
