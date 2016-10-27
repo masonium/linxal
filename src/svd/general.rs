@@ -9,11 +9,7 @@ use super::types::{SVDSolution, SVDError};
 use matrix::{slice_and_layout_mut, matrix_with_layout};
 use std::cmp;
 
-#[derive(Debug, PartialEq)]
-enum SVDMethod {
-    Normal,
-    DivideAndConquer
-}
+const SVD_NORMAL_LIMIT: usize = 200;
 
 pub trait SVD: Sized + Clone {
     type SingularValue;
@@ -45,15 +41,23 @@ pub trait SVD: Sized + Clone {
     }
 }
 
+
+#[derive(Debug, PartialEq)]
+enum SVDMethod {
+    Normal,
+    DivideAndConquer
+}
+
+
 /// Choose a method based on the problem.
-fn select_svd_method(d: &Ix2, compute_either: bool) -> SVDMethod{
+fn select_svd_method(d: &Ix2, compute_either: bool) -> SVDMethod {
     let mx = cmp::max(d.0, d.1);
 
     // When we're computing one of them singular vector sets, we have
     // to compute both with divide and conquer. So, we're bound by the
     // maximum size of the array.
     if compute_either {
-        if mx < 2000 {
+        if mx > SVD_NORMAL_LIMIT {
             SVDMethod::Normal
         } else {
             SVDMethod::DivideAndConquer
