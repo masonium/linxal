@@ -4,7 +4,8 @@ use ndarray::{ArrayBase, Array, DataMut, Data, Ix, Ix2};
 use lapack::c::{ssyev, dsyev, cheev, zheev};
 use lapack::{c32, c64};
 use super::types::{Solution, EigenError};
-use matrix::*;
+use types::Symmetric;
+use util::*;
 
 pub trait SymEigen : Sized
 {
@@ -89,7 +90,8 @@ impl_sym_eigen!(c64, f64, zheev);
 mod tests {
     use super::SymEigen;
     use ndarray::prelude::*;
-    use matrix::Symmetric;
+    use types::Symmetric;
+    use num_traits::ToPrimitive;
 
     #[test]
     fn try_eig() {

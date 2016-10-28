@@ -5,16 +5,6 @@ use ndarray::{Ix2, DataMut};
 use lapack::c::{Layout};
 use std::slice;
 
-/// enum for symmetric matrix inputs
-#[repr(u8)]
-pub enum Symmetric {
-    /// Read elements from the upper-triangular portion of the matrix
-    Upper = b'U',
-
-    /// Read elements from the lower-triangular portion of the matrix
-    Lower =  b'L'
-}
-
 #[macro_export]
 macro_rules! assert_in_tol {
     ($e1:expr, $e2:expr, $tol:expr) => (

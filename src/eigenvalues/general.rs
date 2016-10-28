@@ -3,7 +3,7 @@ use ndarray::prelude::*;
 use ndarray::{Data, DataMut, Ix2};
 use lapack::{c32, c64};
 use lapack::c::{sgeev, dgeev, cgeev, zgeev};
-use matrix::{matrix_with_layout, slice_and_layout_mut};
+use util::*;
 use super::types::{EigenError, Solution};
 
 pub trait Eigen : Sized + Clone

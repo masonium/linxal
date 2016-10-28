@@ -12,12 +12,12 @@ keywords = ["linear algebra", "ndarray", "matrix", "vector"]
 
 [features]
 default = ["openblas"]
-
 openblas = ["blas/openblas", "lapack/openblas"]
 netlib = ["blas/netlib", "lapack/netlib"]
 
 [dependencies]
 ndarray = "0.6"
+num-traits = "*"
 
 [dependencies.lapack]
 version = "0.11"
