@@ -1,5 +1,6 @@
 use ndarray::prelude::*;
-use lapack::c::{sgesv};
+use lapack::{c32, c64};
+use lapack::c::{sgesv, dgesv, cgesv, zgesv};
 use ndarray::{Ix2, Data, DataMut};
 use util::*;
 
@@ -72,51 +73,56 @@ pub trait SolveLinear: Sized + Clone {
 
 }
 
-impl SolveLinear for f32 {
-    fn compute_multi_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) ->
-        Result<ArrayBase<D2, Ix2>, SolveError>
+macro_rules! impl_solve_linear {
+    ($impl_type: ty, $driver: ident) => (
+        impl SolveLinear for $impl_type {
+            fn compute_multi_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) ->
+                Result<ArrayBase<D2, Ix2>, SolveError>
 
-        where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
+                where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
 
-        // Make sure the input is square.
-        let dim = a.dim();
-        let b_dim = b.dim();
+                // Make sure the input is square.
+                let dim = a.dim();
+                let b_dim = b.dim();
 
-        if dim.0 != dim.1 {
-            return Err(SolveError::NotSquare(dim.0, dim.1));
-        }
-        if dim.0 != b_dim.0 {
-            return Err(SolveError::InconsistentDimensions(dim.0, b_dim.0));
-        }
+                if dim.0 != dim.1 {
+                    return Err(SolveError::NotSquare(dim.0, dim.1));
+                }
+                if dim.0 != b_dim.0 {
+                    return Err(SolveError::InconsistentDimensions(dim.0, b_dim.0));
+                }
 
-        let (slice, layout, lda) = match slice_and_layout_mut(&mut a) {
-            Some(x) => x,
-            None => return Err(SolveError::BadLayout)
-        };
+                let (slice, layout, lda) = match slice_and_layout_mut(&mut a) {
+                    Some(x) => x,
+                    None => return Err(SolveError::BadLayout)
+                };
 
-        let (info, ldb) = {
-            let (b_slice, ldb) = match slice_and_layout_matching_mut(&mut b, layout) {
-                Some(x) => x,
-                None => return Err(SolveError::InconsistentLayout)
-            };
+                let info = {
+                    let (b_slice, ldb) = match slice_and_layout_matching_mut(&mut b, layout) {
+                        Some(x) => x,
+                        None => return Err(SolveError::InconsistentLayout)
+                    };
 
-            let mut perm: Array<i32, Ix> = Array::default(dim.0);
+                    let mut perm: Array<i32, Ix> = Array::default(dim.0);
 
-            (sgesv(layout, dim.0 as i32, b_dim.1 as i32,
-                  slice, lda as i32,
-                  perm.as_slice_mut().unwrap(),
-                  b_slice, ldb as i32), ldb)
-        };
+                    $driver(layout, dim.0 as i32, b_dim.1 as i32,
+                           slice, lda as i32,
+                           perm.as_slice_mut().unwrap(),
+                           b_slice, ldb as i32)
+                };
 
-        if info == 0 {
-            Ok(b)
-        } else if info < 0 {
-            if info == -8 {
-                println!("Bad ldb: {}", ldb);
+                if info == 0 {
+                    Ok(b)
+                } else if info < 0 {
+                    Err(SolveError::IllegalValue(-info))
+                } else {
+                    Err(SolveError::Singular(info))
+                }
             }
-            Err(SolveError::IllegalValue(-info))
-        } else {
-            Err(SolveError::Singular(info))
-        }
-    }
+        })
 }
+
+impl_solve_linear!(f32, sgesv);
+impl_solve_linear!(f64, dgesv);
+impl_solve_linear!(c32, cgesv);
+impl_solve_linear!(c64, zgesv);

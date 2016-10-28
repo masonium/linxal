@@ -7,7 +7,7 @@ extern crate lapack;
 use ndarray::prelude::*;
 use rula::prelude::*;
 use ndarray::{Ix2};
-use num_traits::{One, Zero, ToPrimitive};
+use num_traits::{ToPrimitive};
 
 #[test]
 pub fn solve_linear_vector() {
