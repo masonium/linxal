@@ -5,6 +5,17 @@ use ndarray::{Ix2, DataMut};
 use lapack::c::{Layout};
 use std::slice;
 
+/// Assert that two ndarrays are logically equivalent, within
+/// tolerance.
+///
+/// Assert that two ndarrays are the same dimension, and that every element
+/// of the first array is equal to the corresponding element of the
+/// second array, within a given tolerance.
+///
+/// # Remarks
+///
+/// Arrays with different storage layouts are otherwise considered
+/// equal. Doesn't perform broadcasting.
 #[macro_export]
 macro_rules! assert_in_tol {
     ($e1:expr, $e2:expr, $tol:expr) => (
@@ -32,14 +43,12 @@ pub fn matrix_with_layout<T: Default>(d: Ix2, layout: Layout) -> Array<T, Ix2> {
     })
 }
 
-
-
-/// Return true if an array can be used as a matrix input.
+/// Return the slice, layout, and leading dimension of the matrix.
 ///
 /// For LAPACKE methods, the memory layout does not need to be
 /// contiguous. We only required that either rows or columns are
 /// contiguous.
-pub fn slice_and_layout_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, (Ix, Ix)>) -> Option<(&mut [S::Elem], Layout, Ixs)> {
+pub fn slice_and_layout_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, Ix2>) -> Option<(&mut [S::Elem], Layout, Ixs)> {
     let strides = {
         let s = mat.strides();
         (s[0], s[1])
@@ -71,4 +80,39 @@ pub fn slice_and_layout_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, (Ix, I
     else {
         None
     }
+}
+
+/// Return the slice, layout, and leading dimension of the matrix. If
+/// the matrix can be interpreted with multiple inputs, assume the
+/// previous one.
+///
+/// For LAPACKE methods, the memory layout does not need to be
+/// contiguous. We only required that either rows or columns are
+/// contiguous.
+///
+/// Returns None if the layout can't be matched.
+pub fn slice_and_layout_matching_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, Ix2>, layout: Layout) ->
+    Option<(&mut [S::Elem], Ixs)>
+{
+    let dim = mat.dim();
+
+    // For column vectors, we can choose whatever layout we want.
+    if dim.1 == 1 {
+        let m = mat.strides()[0];
+
+        let s = unsafe {
+            let nelem: usize = (dim.0 - 1) * m as usize + dim.1;
+            slice::from_raw_parts_mut(mat.as_mut_ptr(), nelem)
+        };
+        return Some((s, m))
+    }
+
+    // Otherwise, we just use the normal method and check for a match.
+    if let Some((slice, lo, ld)) = slice_and_layout_mut(mat) {
+        if lo == layout {
+            return Some((slice, ld))
+        }
+    }
+
+    None
 }

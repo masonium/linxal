@@ -11,6 +11,7 @@ pub mod util;
 
 pub mod eigenvalues;
 pub mod svd;
+pub mod solve_linear;
 pub mod types;
 
 #[macro_use]
