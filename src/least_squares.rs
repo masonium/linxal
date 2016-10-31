@@ -1,10 +1,7 @@
 //! This module contains the `LeastSquares` trait, which acts as an
 //! entry point, which is used to compute least squares solutions.
-use ndarray::prelude::*;
-use util::*;
-use ndarray::{Data, DataMut, Ix2};
-use lapack::c::{sgels, sgelsd};
-use std::cmp;
+use impl_prelude::*;
+use lapack::c::{sgels, sgelsd, dgels, dgelsd, cgels, cgelsd, zgels, zgelsd};
 
 pub struct LeastSquaresSolution<T, D: Dimension> {
     pub solution: Array<T, D>,
@@ -128,7 +125,7 @@ pub trait LeastSquares: Sized + Clone {
 
         // Create a new matrix, where the column vector is a degenerate 2-D matrix.
         let b_mat = match b.to_owned().into_shape((n, 1)) {
-             Ok(x) => x,
+            Ok(x) => x,
             Err(_) => return Err(LeastSquaresError::BadLayout)
         };
 
@@ -158,85 +155,94 @@ fn resize_solution<T: Clone + Default, D>(mut b_sol: ArrayBase<D, Ix2>, n: usize
     }
 }
 
-impl LeastSquares for f32 {
-    fn compute_multi_full_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
+macro_rules! impl_least_squares {
+    ($impl_type:ty, $sv_type:ty, $full_func:ident, $degen_func:ident) => (
+        impl LeastSquares for $impl_type {
+            fn compute_multi_full_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+                where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
 
-        let a_dim = a.dim();
-        let b_dim = b.dim();
+                let a_dim = a.dim();
+                let b_dim = b.dim();
 
-        // confirm same number of rows.
-        if a_dim.0 != b_dim.0 {
-            return Err(LeastSquaresError::InconsistentDimensions(a_dim.0, b_dim.0));
+                // confirm same number of rows.
+                if a_dim.0 != b_dim.0 {
+                    return Err(LeastSquaresError::InconsistentDimensions(a_dim.0, b_dim.0));
+                }
+
+                // confirm layouts
+                let (a_slice, layout, lda) = match slice_and_layout_mut(&mut a) {
+                    Some(x) => x,
+                    None => return Err(LeastSquaresError::BadLayout)
+                };
+
+                // compute result
+                let info = {
+                    let (b_slice, ldb) = match slice_and_layout_matching_mut(&mut b, layout) {
+                        Some(x) => x,
+                        None => return Err(LeastSquaresError::InconsistentLayout)
+                    };
+
+                    $full_func(layout, b'N', a_dim.0 as i32 , a_dim.1 as i32, b_dim.1 as i32,
+                               a_slice, lda as i32,
+                               b_slice, ldb as i32)
+                };
+
+                if info == 0 {
+                    Ok(LeastSquaresSolution { solution: resize_solution(b, a_dim.1), rank: cmp::min(a_dim.0, a_dim.1) })
+                } else if info < 0 {
+                    Err(LeastSquaresError::IllegalParameter(-info))
+                } else {
+                    Err(LeastSquaresError::Degenerate)
+                }
+            }
+
+            fn compute_multi_degenerate_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+                where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
+
+                let a_dim = a.dim();
+                let b_dim = b.dim();
+
+                // confirm same number of rows.
+                if a_dim.0 != b_dim.0 {
+                    return Err(LeastSquaresError::InconsistentDimensions(a_dim.0, b_dim.0));
+                }
+
+                // confirm layouts
+                let (a_slice, layout, lda) = match slice_and_layout_mut(&mut a) {
+                    Some(x) => x,
+                    None => return Err(LeastSquaresError::BadLayout)
+                };
+
+                let mut svs: Array<$sv_type, Ix> = Array::default(cmp::min(a_dim.0, a_dim.1));
+                let mut rank: i32 = 0;
+
+                // compute result
+                let info = {
+                    let (b_slice, ldb) = match slice_and_layout_matching_mut(&mut b, layout) {
+                        Some(x) => x,
+                        None => return Err(LeastSquaresError::InconsistentLayout)
+                    };
+
+                    $degen_func(layout, a_dim.0 as i32 , a_dim.1 as i32, b_dim.1 as i32,
+                                a_slice, lda as i32,
+                                b_slice, ldb as i32,
+                                svs.as_slice_mut().unwrap(), 0.0,
+                                &mut rank)
+                };
+
+                if info == 0 {
+                    Ok(LeastSquaresSolution { solution: resize_solution(b, a_dim.1), rank: rank as usize })
+                } else if info < 0 {
+                    Err(LeastSquaresError::IllegalParameter(-info))
+                } else {
+                    unreachable!();
+                }
+            }
         }
-
-        // confirm layouts
-        let (a_slice, layout, lda) = match slice_and_layout_mut(&mut a) {
-            Some(x) => x,
-            None => return Err(LeastSquaresError::BadLayout)
-        };
-
-        // compute result
-        let info = {
-            let (b_slice, ldb) = match slice_and_layout_matching_mut(&mut b, layout) {
-                Some(x) => x,
-                None => return Err(LeastSquaresError::InconsistentLayout)
-            };
-
-            sgels(layout, b'N', a_dim.0 as i32 , a_dim.1 as i32, b_dim.1 as i32,
-                  a_slice, lda as i32,
-                  b_slice, ldb as i32)
-        };
-
-        if info == 0 {
-            Ok(LeastSquaresSolution { solution: resize_solution(b, a_dim.1), rank: cmp::min(a_dim.0, a_dim.1) })
-        } else if info < 0 {
-            Err(LeastSquaresError::IllegalParameter(-info))
-        } else {
-            Err(LeastSquaresError::Degenerate)
-        }
-    }
-
-    fn compute_multi_degenerate_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
-
-        let a_dim = a.dim();
-        let b_dim = b.dim();
-
-        // confirm same number of rows.
-        if a_dim.0 != b_dim.0 {
-            return Err(LeastSquaresError::InconsistentDimensions(a_dim.0, b_dim.0));
-        }
-
-        // confirm layouts
-        let (a_slice, layout, lda) = match slice_and_layout_mut(&mut a) {
-            Some(x) => x,
-            None => return Err(LeastSquaresError::BadLayout)
-        };
-
-        let mut svs: Array<Self, Ix> = Array::default(cmp::min(a_dim.0, a_dim.1));
-        let mut rank: i32 = 0;
-
-        // compute result
-        let info = {
-            let (b_slice, ldb) = match slice_and_layout_matching_mut(&mut b, layout) {
-                Some(x) => x,
-                None => return Err(LeastSquaresError::InconsistentLayout)
-            };
-
-            sgelsd(layout, a_dim.0 as i32 , a_dim.1 as i32, b_dim.1 as i32,
-                   a_slice, lda as i32,
-                   b_slice, ldb as i32,
-                   svs.as_slice_mut().unwrap(), 0.0,
-                   &mut rank)
-        };
-
-        if info == 0 {
-            Ok(LeastSquaresSolution { solution: resize_solution(b, a_dim.1), rank: rank as usize })
-        } else if info < 0 {
-            Err(LeastSquaresError::IllegalParameter(-info))
-        } else {
-            unreachable!();
-        }
-    }
+    )
 }
+
+impl_least_squares!(f32, f32, sgels, sgelsd);
+impl_least_squares!(f64, f64, dgels, dgelsd);
+impl_least_squares!(c32, f32, cgels, cgelsd);
+impl_least_squares!(c64, f64, zgels, zgelsd);
