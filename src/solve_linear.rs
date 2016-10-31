@@ -37,12 +37,12 @@ pub trait SolveLinear: Sized + Clone {
 
     /// Solve the linear system A * x = b for square matrix `a` and column vector `b`.
     fn compute_into<D1, D2>(a: ArrayBase<D1, Ix2>, b: ArrayBase<D2, Ix>) ->
-        Result<Array<Self, Ix>, SolveError>
-        where D1: DataMut<Elem=Self>, D2: Data<Elem=Self> {
+        Result<ArrayBase<D2, Ix>, SolveError>
+        where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
         let n = b.dim();
 
-        // Create a new view, where the column vector is a degenerate 2-D matrix.
-        let b_mat = match b.to_owned().into_shape((n, 1)) {
+        // Create a new matrix, where the column vector is a degenerate 2-D matrix.
+        let b_mat = match b.into_shape((n, 1)) {
             Ok(x) => x,
             Err(_) => return Err(SolveError::BadLayout)
         };
@@ -50,6 +50,7 @@ pub trait SolveLinear: Sized + Clone {
         // Call the original
         let res = try!(Self::compute_multi_into(a, b_mat));
 
+        // Reshape the matrix into a vector and return.
         Ok(res.into_shape(n).unwrap())
     }
 
