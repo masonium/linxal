@@ -1,4 +1,4 @@
-# rula #
+# rula [![Build Status](https://travis-ci.org/masonium/rula.svg?branch=master)](https://travis-ci.org/masonium/rula) #
 `rula` is a linear algebra package for rust. `rula` uses LAPACK as a
 backend, (specifically with the `lapack` package) to execute linear
 algebra routines with `rust-ndarray` as inputs and outputs.
@@ -13,23 +13,21 @@ algebra routines with `rust-ndarray` as inputs and outputs.
 
   `rula` will minimize surprising behaviour.
 
-  (tentative) For instance, in most cases `rula` is consume inputs and return new
-  values as output, rather than modifying inputs in place.
-
 - Documentation: `rula` will strive to provide documentation for all
   functionality.
+
 - Speed
 
 ## Goals ##
 - [ ] Major Linear algbra routines
   - [X] Eigenvalues
   - [X] Singular Value
-  - [ ] Linear Solvers
-  - [ ] Linear Least-Squares
+  - [X] Linear Solvers
+  - [X] Linear Least-Squares
   - [ ] Matrix Factorizations (QR, LU, etc.)
   - [ ] Generalized Eigenvalues
   - [ ] Generalized Singular Value Decomposition
-- [ ] Multiple matirx formats
-  - [ ] General
+- [ ] Multiple matrix formats
+  - [X] General (direct via `ndarray`)
   - [ ] Symmetric / Hermitian
   - [ ] Banded (Packed)

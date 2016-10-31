@@ -4,11 +4,13 @@ version = "0.1.4"
 authors = ["Mason Smith <masonium@gmail.com>"]
 
 description = "Linear Algebra package with rust-ndarray interface"
+repository = "https://github.com/masonium/rula"
 
 readme = "README.md"
-
 license = "MIT"
 keywords = ["linear algebra", "ndarray", "matrix", "vector"]
+
+include = ["**/*.rs", "LICENSE", "README.md", "Cargo.toml"]
 
 [features]
 default = ["openblas"]

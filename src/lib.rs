@@ -1,6 +1,13 @@
 //! # rula
 //!
-//! `rula` is a linear algebra package on top of `ndarray`.
+//! `rula` is a linear algebra package on top of `ndarray`.It
+//! currently provides major drivers from LAPACK, but will also
+//! support other higher-level tasks in the future, such as linear
+//! regression, PCA, etc.
+//!
+//! # Uasge
+//!
+//! rula is available as a crate through cargo.
 #![macro_use]
 
 #[macro_use]
