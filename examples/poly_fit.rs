@@ -32,7 +32,7 @@ fn vandermonde_row(x: f32, n: usize) -> Array<f32, Ix> {
     let mut v: Vec<f32> = Vec::with_capacity(n+1);
     let mut r = 1.0;
     v.push(1.0);
-    for i in 1..(n+1) {
+    for _ in 1..(n+1) {
         r *= x;
         v.push(r);
     }
