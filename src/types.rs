@@ -1,3 +1,5 @@
+//! Globally-used traits, structs, and enums
+
 use svd::types::SVDError;
 use eigenvalues::types::EigenError;
 use solve_linear::types::SolveError;

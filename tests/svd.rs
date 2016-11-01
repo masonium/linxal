@@ -6,9 +6,8 @@ extern crate lapack;
 
 use ndarray::prelude::*;
 use rula::prelude::*;
-use lapack::{c32, c64};
 use ndarray::{Ix2};
-use num_traits::{One, Zero, ToPrimitive};
+use num_traits::{One, Zero};
 
 /// Identity matrix SVD
 pub fn svd_test_identity<SV: SingularValue + Magnitude, T: SVD<SV> + One + Zero>() {

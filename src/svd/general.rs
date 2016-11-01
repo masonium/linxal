@@ -1,13 +1,8 @@
 //! Solve singular value decomposition (SVD) of arbitrary matrices.
 
-use ndarray::prelude::*;
-use ndarray::Ix2;
-use ndarray::DataMut;
 use lapack::c::{sgesvd, sgesdd, dgesvd, dgesdd, cgesvd, cgesdd, zgesvd, zgesdd};
-use lapack::{c32, c64};
 use super::types::{SVDSolution, SVDError, SingularValue};
-use util::*;
-use std::cmp;
+use impl_prelude::*;
 
 const SVD_NORMAL_LIMIT: usize = 200;
 

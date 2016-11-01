@@ -1,11 +1,8 @@
 //! Compute eigenvalues and eigenvectors of symmetric matrices.
 
-use ndarray::{ArrayBase, Array, DataMut, Data, Ix, Ix2};
 use lapack::c::{ssyev, dsyev, cheev, zheev};
-use lapack::{c32, c64};
 use super::types::{Solution, EigenError};
-use types::Symmetric;
-use util::*;
+use impl_prelude::*;
 
 pub trait SymEigen : Sized
 {
@@ -88,20 +85,5 @@ impl_sym_eigen!(c64, f64, zheev);
 
 #[cfg(test)]
 mod tests {
-    use super::SymEigen;
-    use super::super::super::util::Magnitude;
-    use ndarray::prelude::*;
-    use types::Symmetric;
-    use num_traits::ToPrimitive;
-
-    #[test]
-    fn try_eig() {
-        let mut m = arr2(&[[1.0 as f32, 2.0], [2.0, 1.0]]);
-
-        let r = SymEigen::compute_mut(&mut m, Symmetric::Upper, false);
-        assert!(r.is_ok());
-
-        assert_in_tol!(r.unwrap(), arr1(&[-1.0, 3.0]), 0.01);
-    }
 
 }

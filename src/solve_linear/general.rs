@@ -1,9 +1,6 @@
-use ndarray::prelude::*;
-use lapack::{c32, c64};
+use impl_prelude::*;
 use lapack::c::{sgesv, dgesv, cgesv, zgesv};
-use ndarray::{Ix2, Data, DataMut};
 use super::types::SolveError;
-use util::*;
 
 /// Implements `compute_*` methods to solve systems of linear equations.
 pub trait SolveLinear: Sized + Clone {
