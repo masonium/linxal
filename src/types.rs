@@ -1,6 +1,6 @@
 use svd::types::SVDError;
 use eigenvalues::types::EigenError;
-use solve_linear::SolveError;
+use solve_linear::types::SolveError;
 use least_squares::LeastSquaresError;
 
 /// Enum for symmetric matrix inputs.

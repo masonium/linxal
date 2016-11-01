@@ -1,39 +1,9 @@
-//! Containts traits and methods to solve sets of linear equations.
-//!
-//! The primary content of this modules is the `SolveLinear` trait,
-//! which computes solutions `X` to the linear system A*X = B, for
-//! square matrices A.
-
 use ndarray::prelude::*;
 use lapack::{c32, c64};
 use lapack::c::{sgesv, dgesv, cgesv, zgesv};
 use ndarray::{Ix2, Data, DataMut};
+use super::types::SolveError;
 use util::*;
-
-#[derive(Debug, Clone)]
-pub enum SolveError {
-    /// The layout of one of the matrices is not c- or
-    /// fortran-contiguous.
-    BadLayout,
-
-    /// The layouts of `a` and `b` are different. (i.e. one is
-    /// column-major and the other is row-major.)
-    InconsistentLayout,
-
-    /// An illegal value was passed into the underlying LAPACK. Users
-    /// should never see this error.
-    IllegalValue(i32),
-
-    /// The matrix `a`, thus a solution `b` cannot necessarily be
-    /// found.
-    Singular(i32),
-
-    /// The input `a` matrix is not square.
-    NotSquare(usize, usize),
-
-    /// The dimensions of `a` and `b` do not match.
-    InconsistentDimensions(usize, usize)
-}
 
 /// Implements `compute_*` methods to solve systems of linear equations.
 pub trait SolveLinear: Sized + Clone {
