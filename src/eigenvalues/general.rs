@@ -138,8 +138,10 @@ impl_eigen_complex!(c64, zgeev);
 
 #[cfg(test)]
 mod tests {
-    use super::Eigen;
-    use ndarray::{arr2};
+    use super::super::super::prelude::*;
+    use ndarray::prelude::*;
+    use lapack::{c32};
+    use num_traits::{ToPrimitive};
 
     #[test]
     fn try_eig() {
@@ -148,6 +150,19 @@ mod tests {
 
         let r = Eigen::compute_mut(&mut m, false, true);
         assert!(r.is_ok());
+    }
+
+    #[test]
+    fn try_eig_func() {
+        let mut m = arr2(&[[1.0 as f32, 2.0],
+                           [-2.0, 1.0]]);
+
+        let r = Eigen::compute_mut(&mut m, false, true);
+        assert!(r.is_ok());
+
+        let r = r.unwrap();
+        let true_evs = Array::from_vec(vec![c32::new(1.0, 2.0), c32::new(1.0, -2.0)]);
+        assert_in_tol!(true_evs, r.values, 0.01);
     }
 
 }

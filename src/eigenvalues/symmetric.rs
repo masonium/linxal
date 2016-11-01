@@ -89,6 +89,7 @@ impl_sym_eigen!(c64, f64, zheev);
 #[cfg(test)]
 mod tests {
     use super::SymEigen;
+    use super::super::super::util::Magnitude;
     use ndarray::prelude::*;
     use types::Symmetric;
     use num_traits::ToPrimitive;
