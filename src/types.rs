@@ -1,7 +1,9 @@
 use svd::types::SVDError;
 use eigenvalues::types::EigenError;
+use solve_linear::SolveError;
+use least_squares::LeastSquaresError;
 
-/// enum for symmetric matrix inputs
+/// Enum for symmetric matrix inputs.
 #[repr(u8)]
 pub enum Symmetric {
     /// Read elements from the upper-triangular portion of the matrix
@@ -11,10 +13,15 @@ pub enum Symmetric {
     Lower =  b'L'
 }
 
-/// Global error enum
+/// Universal `rula` error enum
+///
+/// This enum can be used as a catch-all for errors from `rula`
+/// computations.
 pub enum Error {
     SVD(SVDError),
-    Eigen(EigenError)
+    Eigen(EigenError),
+    LeastSquares(LeastSquaresError),
+    SolveLinear(SolveError)
 }
 
 impl From<SVDError> for Error {
@@ -26,5 +33,17 @@ impl From<SVDError> for Error {
 impl From<EigenError> for Error {
     fn from(e: EigenError) -> Error {
         Error::Eigen(e)
+    }
+}
+
+impl From<LeastSquaresError> for Error {
+    fn from(e: LeastSquaresError) -> Error {
+        Error::LeastSquares(e)
+    }
+}
+
+impl From<SolveError> for Error {
+    fn from(e: SolveError) -> Error {
+        Error::SolveLinear(e)
     }
 }
