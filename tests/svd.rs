@@ -11,7 +11,7 @@ use ndarray::{Ix2};
 use num_traits::{One, Zero, ToPrimitive};
 
 /// Identity matrix SVD
-pub fn svd_test_identity<SV: SingularValue, T: SVD<SV> + One + Zero>() {
+pub fn svd_test_identity<SV: SingularValue + Magnitude, T: SVD<SV> + One + Zero>() {
     const N: usize = 100;
     let m: Array<T, Ix2> = Array::eye(N);
     let solution = SVD::compute(&m, false, false);
