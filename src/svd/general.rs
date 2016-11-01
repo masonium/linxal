@@ -11,6 +11,7 @@ use std::cmp;
 
 const SVD_NORMAL_LIMIT: usize = 200;
 
+/// Trait for scalars that can implement SVD.
 pub trait SVD<SV: SingularValue>: Sized + Clone {
     /// Compute the singular value decomposition of a matrix.
     ///
@@ -18,7 +19,7 @@ pub trait SVD<SV: SingularValue>: Sized + Clone {
     /// method is called. Use `Self::compute` when you don't wnat to
     /// modify the matrix.
     ///
-    /// On success, returns an SVDSolution`, which always contains the
+    /// On success, returns an `SVDSolution`, which always contains the
     /// singular values and optionally contains the left and right
     /// singular vectors. The left vectors (via the matrix `u`) are
     /// returned iff `compute_u` is true, and similarly for `vt` and
@@ -28,7 +29,7 @@ pub trait SVD<SV: SingularValue>: Sized + Clone {
 
     /// Comptue the singular value decomposition of a matrix.
     ///
-    /// Similar to `compute`, but the values are copied
+    /// Similar to [`SVD::compute_mut`](#tymethod.compute_mut), but the values are copied
     /// beforehand. leaving the original matrix un-modified.
     fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<Self, SV>, SVDError>
         where D: DataMut<Elem=Self> {
