@@ -15,9 +15,9 @@ pub enum Symmetric {
     Lower = b'L',
 }
 
-/// Universal `rula` error enum
+/// Universal `linxal` error enum
 ///
-/// This enum can be used as a catch-all for errors from `rula`
+/// This enum can be used as a catch-all for errors from `linxal`
 /// computations.
 pub enum Error {
     SVD(SVDError),

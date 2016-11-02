@@ -1,11 +1,11 @@
 extern crate num_traits;
 extern crate ndarray;
 #[macro_use]
-extern crate rula;
+extern crate linxal;
 extern crate lapack;
 
 use ndarray::prelude::*;
-use rula::prelude::*;
+use linxal::prelude::*;
 use ndarray::Ix2;
 use num_traits::{One, Zero};
 

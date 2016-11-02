@@ -1,9 +1,9 @@
 #[macro_use]
-extern crate rula;
+extern crate linxal;
 extern crate ndarray;
 
 use ndarray::prelude::*;
-use rula::prelude::*;
+use linxal::prelude::*;
 
 #[test]
 fn try_eig() {

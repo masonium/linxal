@@ -1,8 +1,8 @@
 #[macro_use]
-extern crate rula;
+extern crate linxal;
 extern crate ndarray;
 
-use rula::prelude::*;
+use linxal::prelude::*;
 use ndarray::prelude::*;
 
 #[test]

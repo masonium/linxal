@@ -1,33 +1,33 @@
 //! # Description
 //!
-//! `rula` is a linear algebra package on top of `ndarray`.It
+//! `linxal` is a linear algebra package on top of `ndarray`.It
 //! currently provides major drivers from LAPACK, but will also
 //! support other higher-level tasks in the future, such as linear
 //! regression, PCA, etc.
 //!
 //! # Uasge
 //!
-//! rula is available as a crate through cargo. Add the following line
+//! linxal is available as a crate through cargo. Add the following line
 //! to your Cargo.toml, in the `dependencies` section:
 //!
 //! ```text
 //! [dependencies]
 //! ...
-//! rula = "0.1"
+//! linxal = "0.1"
 //! ```
 //!
 //! In your `lib.rs` or `main.rs` file, use
 //!
 //! ```text
-//! extern crate rula;
-//! use rula::prelude::*;
+//! extern crate linxal;
+//! use linxal::prelude::*;
 //! ```
 //!
-//! The [`rula::prelude`](./prelude) modules re-exports the most useful functionality.
+//! The [`linxal::prelude`](./prelude) modules re-exports the most useful functionality.
 //!
 //! # Organization
 //!
-//! Most of the useful functionality for `rula` comes in the form of
+//! Most of the useful functionality for `linxal` comes in the form of
 //! traits, which are implemented in terms of scalars and provide
 //! functionality for matrices and vectors composed of the
 //! scalars. Most traits have a `compute` function, and variants,
@@ -39,10 +39,10 @@
 //!
 //! ```rust
 //! #[macro_use]
-//! extern crate rula;
+//! extern crate linxal;
 //! extern crate ndarray;
 //!
-//! use rula::prelude::*;
+//! use linxal::prelude::*;
 //! use ndarray::prelude::*;
 //!
 //! fn main() {

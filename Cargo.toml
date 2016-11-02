@@ -1,11 +1,11 @@
 [package]
-name = "rula"
+name = "linxal"
 version = "0.1.5"
 authors = ["Mason Smith <masonium@gmail.com>"]
 
 description = "Linear Algebra package with rust-ndarray interface"
-repository = "https://github.com/masonium/rula"
-documentation = "https://masonium.github.io/rustdoc/rula/"
+repository = "https://github.com/masonium/linxal"
+documentation = "https://masonium.github.io/rustdoc/linxal/"
 
 readme = "README.md"
 license = "MIT"

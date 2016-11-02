@@ -1,19 +1,19 @@
-# rula [![Build Status](https://travis-ci.org/masonium/rula.svg?branch=master)](https://travis-ci.org/masonium/rula) #
-`rula` is a linear algebra package for rust. `rula` uses LAPACK as a
+# linxal [![Build Status](https://travis-ci.org/masonium/linxal.svg?branch=master)](https://travis-ci.org/masonium/linxal) #
+`linxal` is a linear algebra package for rust. `linxal` uses LAPACK as a
 backend, (specifically with the `lapack` package) to execute linear
 algebra routines with `rust-ndarray` as inputs and outputs.
 
 ## Documentation ##
-Documentation can be found at [github.masonium.io/rustdoc/rula/](https://masonium.github.io/rustdoc/rula).
+Documentation can be found at [github.masonium.io/rustdoc/linxal/](https://masonium.github.io/rustdoc/linxal).
 
 ## Example ##
 
 ```rust
 #[macro_use]
-extern crate rula;
+extern crate linxal;
 extern crate ndarray;
 
-use rula::prelude::*;
+use linxal::prelude::*;
 use ndarray::prelude::*;
 
 fn main() {
@@ -30,25 +30,25 @@ fn main() {
 ```
 
 ## Priorities ##
-- Correctness: `rula` will strive for correctness in all cases. Any
+- Correctness: `linxal` will strive for correctness in all cases. Any
   function returning a non-`Err` result should return a correct
   result.
-- Ease of Use: `rula` will provide a consistent interface and should
+- Ease of Use: `linxal` will provide a consistent interface and should
   require minimal setup. Most routine should be high-level and should
   require no knowledge of the underlying LAPACK routines.
 
-  `rula` will minimize surprising behaviour.
+  `linxal` will minimize surprising behaviour.
 
-- Documentation: `rula` will strive to provide documentation for all
+- Documentation: `linxal` will strive to provide documentation for all
   functionality. Undocumented public features are a bug.
 
-- Ergonomics: `rula` will try to minimize boilerplate whenever
+- Ergonomics: `linxal` will try to minimize boilerplate whenever
   appropriate.
 
 - Speed
 
 ## Non-Goals ##
-- Low-dimension arithmetic: `rula` is not specifically designed or
+- Low-dimension arithmetic: `linxal` is not specifically designed or
   optimized for {2,3,4}-D problems, as you would encounter in computer
   graphics, physics, or other domains. There are libraries such
   as [`nalgebra`](https://crates.io/crates/nalgebra)

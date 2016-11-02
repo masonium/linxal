@@ -12,11 +12,11 @@
 //! `n`. As long as `n` >= 3, the resulting solution should be close
 //! to the original polynomial.
 
-extern crate rula;
+extern crate linxal;
 extern crate ndarray;
 extern crate rand;
 
-use rula::prelude::*;
+use linxal::prelude::*;
 use ndarray::prelude::*;
 use rand::{thread_rng};
 use rand::distributions::{Normal, Sample};
