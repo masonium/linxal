@@ -39,13 +39,26 @@ fn main() {
 
   `rula` will minimize surprising behaviour.
 
+- Documentation: `rula` will strive to provide documentation for all
+  functionality. Undocumented public features are a bug.
+
 - Ergonomics: `rula` will try to minimize boilerplate whenever
   appropriate.
 
-- Documentation: `rula` will strive to provide documentation for all
-  functionality.
-
 - Speed
+
+## Non-Goals ##
+- Low-dimension arithmetic: `rula` is not specifically designed or
+  optimized for {2,3,4}-D problems, as you would encounter in computer
+  graphics, physics, or other domains. There are libraries such
+  as [`nalgebra`](https://crates.io/crates/nalgebra)
+  and [`cgmath`](https://crates.io/crates/cgmath) that specialize in
+  low-dimensional algorithms.
+
+- Representation flexibility: `ndarray` is the only for standard
+  matrices, and future representations of specialized formats (packed
+  triangular, banded, tridiagonal, etc.) will probably not allow for
+  user-defined formats.
 
 ## Goals ##
 - [ ] Major Linear algbra routines
@@ -60,3 +73,6 @@ fn main() {
   - [X] General (direct via `ndarray`)
   - [ ] Symmetric / Hermitian
   - [ ] Banded (Packed)
+
+## Contributing ##
+Pull requests of all kinds (code, documentation, formatting, spell-checks) are welcome!
