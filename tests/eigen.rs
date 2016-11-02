@@ -22,5 +22,5 @@ fn try_eig_func() {
 
     let r = r.unwrap();
     let true_evs = Array::from_vec(vec![c32::new(1.0, 2.0), c32::new(1.0, -2.0)]);
-    assert_in_tol!(true_evs, r.values, 0.01);
+    assert_eq_within_tol!(true_evs, r.values, 0.01);
 }

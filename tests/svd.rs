@@ -18,7 +18,7 @@ pub fn svd_test_identity<SV: SingularValue + Magnitude, T: SVD<SV> + One + Zero>
     let values = solution.unwrap();
 
     let truth = Array::from_vec(vec![SV::one(); N]);
-    assert_in_tol!(&values.values, &truth, 1e-5);
+    assert_eq_within_tol!(&values.values, &truth, 1e-5);
 }
 
 #[test]
@@ -57,7 +57,7 @@ macro_rules! stlf {
             };
 
             let truth = Array::linspace(100.0, 1.0, N);
-            assert_in_tol!(&values, &truth, 1e-5);
+            assert_eq_within_tol!(&values, &truth, 1e-5);
         }
     )
 }
@@ -87,7 +87,7 @@ macro_rules! stlc {
             };
 
             let truth = Array::linspace(100.0 as $sv, 1.0, N);
-            assert_in_tol!(&values, &truth, 1e-5);
+            assert_eq_within_tol!(&values, &truth, 1e-5);
         }
     )
 }

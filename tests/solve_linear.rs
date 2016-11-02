@@ -19,7 +19,7 @@ pub fn solve_linear_vector() {
     let values = x.unwrap();
 
     let truth = Array::from_vec(vec![1.0, 1.0]);
-    assert_in_tol!(&values, &truth, 1e-5);
+    assert_eq_within_tol!(&values, &truth, 1e-5);
 }
 
 
@@ -37,7 +37,7 @@ pub fn solve_linear_matrix() {
     let truth_vec = vec![1.0, 1.0, 2.0, 1.0, -1.0, 0.0];
 
     let truth = Array::from_shape_vec((2, 3), truth_vec).unwrap();
-    assert_in_tol!(&values, &truth, 1e-5);
+    assert_eq_within_tol!(&values, &truth, 1e-5);
 }
 
 
@@ -56,7 +56,7 @@ pub fn solve_linear_vector_view() {
         let x = SolveLinear::compute(&a, &bv);
         assert!(x.is_ok());
         let values = x.unwrap();
-        assert_in_tol!(&values, &xv, 1e-5);
+        assert_eq_within_tol!(&values, &xv, 1e-5);
     }
 
 }

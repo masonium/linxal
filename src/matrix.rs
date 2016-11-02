@@ -6,7 +6,7 @@ use lapack::c::{Layout};
 use std::slice;
 
 #[macro_export]
-macro_rules! assert_in_tol {
+macro_rules! assert_eq_within_tol {
     ($e1:expr, $e2:expr, $tol:expr) => (
         match (&$e1, &$e2, $tol) {
             (x, y, tol) => {

@@ -12,5 +12,5 @@ fn try_eig() {
     let r = SymEigen::compute_mut(&mut m, Symmetric::Upper, false);
     assert!(r.is_ok());
 
-    assert_in_tol!(r.unwrap(), arr1(&[-1.0, 3.0]), 0.01);
+    assert_eq_within_tol!(r.unwrap(), arr1(&[-1.0, 3.0]), 0.01);
 }

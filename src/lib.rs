@@ -54,7 +54,7 @@
 //!
 //!     let r = r.unwrap();
 //!     let true_evs = Array::from_vec(vec![c32::new(1.0, 2.0), c32::new(1.0, -2.0)]);
-//!     assert_in_tol!(r.values, true_evs, 0.0001);
+//!     assert_eq_within_tol!(r.values, true_evs, 0.0001);
 //! }
 //! ```
 #![macro_use]
