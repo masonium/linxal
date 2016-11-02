@@ -1,10 +1,11 @@
 [package]
 name = "rula"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Mason Smith <masonium@gmail.com>"]
 
 description = "Linear Algebra package with rust-ndarray interface"
 repository = "https://github.com/masonium/rula"
+documentation = "https://masonium.github.io/rustdoc/rula/"
 
 readme = "README.md"
 license = "MIT"
