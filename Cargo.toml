@@ -9,7 +9,7 @@ documentation = "https://masonium.github.io/rustdoc/rula/"
 
 readme = "README.md"
 license = "MIT"
-keywords = ["linear-algebra", "linear", "algebra", "ndarray", "matrix", "vector", "svd"]
+keywords = ["linear-algebra", "ndarray", "matrix"]
 
 include = ["**/*.rs", "LICENSE", "README.md", "Cargo.toml"]
 
