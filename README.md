@@ -1,13 +1,20 @@
-# linxal [![Build Status](https://travis-ci.org/masonium/linxal.svg?branch=master)](https://travis-ci.org/masonium/linxal) #
+# linxal #
+
+## Status ##
+[![Crate Version](https://img.shields.io/crates/v/linxal.svg)](https://img.shields.io/crates/v/linxal.svg)
+[![Build Status](https://travis-ci.org/masonium/linxal.svg?branch=master)](https://travis-ci.org/masonium/linxal)
+
+
+## Description ##
+
 `linxal` is a linear algebra package for rust. `linxal` uses LAPACK as a
 backend, (specifically with the `lapack` package) to execute linear
 algebra routines with `rust-ndarray` as inputs and outputs.
 
 ## Documentation ##
-Documentation can be found at [github.masonium.io/rustdoc/linxal/](https://masonium.github.io/rustdoc/linxal).
+Documentation can be found at [https://github.masonium.io/rustdoc/linxal/](https://masonium.github.io/rustdoc/linxal).
 
 ## Example ##
-
 ```rust
 #[macro_use]
 extern crate linxal;

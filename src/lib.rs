@@ -5,6 +5,9 @@
 //! support other higher-level tasks in the future, such as linear
 //! regression, PCA, etc.
 //!
+//! The repository for `linxal` can be found
+//! [here](https://github.com/masonium/linxal).
+//!
 //! # Uasge
 //!
 //! linxal is available as a crate through cargo. Add the following line
