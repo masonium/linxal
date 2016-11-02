@@ -7,8 +7,7 @@ use ndarray::prelude::*;
 
 #[test]
 fn try_eig() {
-    let mut m = arr2(&[[1.0 as f32, 2.0],
-                       [2.0, 1.0]]);
+    let mut m = arr2(&[[1.0 as f32, 2.0], [2.0, 1.0]]);
 
     let r = Eigen::compute_mut(&mut m, false, true);
     assert!(r.is_ok());
@@ -16,8 +15,7 @@ fn try_eig() {
 
 #[test]
 fn try_eig_func() {
-    let mut m = arr2(&[[1.0 as f32, 2.0],
-                       [-2.0, 1.0]]);
+    let mut m = arr2(&[[1.0 as f32, 2.0], [-2.0, 1.0]]);
 
     let r = Eigen::compute_mut(&mut m, false, true);
     assert!(r.is_ok());

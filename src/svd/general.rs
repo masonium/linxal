@@ -19,15 +19,22 @@ pub trait SVD<SV: SingularValue>: Sized + Clone {
     /// singular vectors. The left vectors (via the matrix `u`) are
     /// returned iff `compute_u` is true, and similarly for `vt` and
     /// `compute_vt`.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<Self, SV>, SVDError>
-        where D: DataMut<Elem=Self>;
+    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
+                      compute_u: bool,
+                      compute_vt: bool)
+                      -> Result<SVDSolution<Self, SV>, SVDError>
+        where D: DataMut<Elem = Self>;
 
     /// Comptue the singular value decomposition of a matrix.
     ///
     /// Similar to [`SVD::compute_mut`](#tymethod.compute_mut), but the values are copied
     /// beforehand. leaving the original matrix un-modified.
-    fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<Self, SV>, SVDError>
-        where D: DataMut<Elem=Self> {
+    fn compute<D>(mat: &ArrayBase<D, Ix2>,
+                  compute_u: bool,
+                  compute_vt: bool)
+                  -> Result<SVDSolution<Self, SV>, SVDError>
+        where D: DataMut<Elem = Self>
+    {
         let vec: Vec<Self> = mat.iter().cloned().collect();
         let mut m = Array::from_shape_vec(mat.dim(), vec).unwrap();
         Self::compute_mut(&mut m, compute_u, compute_vt)
@@ -38,7 +45,7 @@ pub trait SVD<SV: SingularValue>: Sized + Clone {
 #[derive(Debug, PartialEq)]
 enum SVDMethod {
     Normal,
-    DivideAndConquer
+    DivideAndConquer,
 }
 
 
@@ -65,7 +72,10 @@ macro_rules! impl_svd {
     ($impl_type:ident, $sv_type:ident, $svd_func:ident, $sdd_func:ident) => (
         impl SVD<$sv_type> for $impl_type {
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, mut compute_u: bool, mut compute_vt: bool) -> Result<SVDSolution<$impl_type, $sv_type>, SVDError>
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
+                              mut compute_u: bool,
+                              mut compute_vt: bool)
+                              -> Result<SVDSolution<$impl_type, $sv_type>, SVDError>
                 where D: DataMut<Elem=Self> {
 
                 let dim = mat.dim();

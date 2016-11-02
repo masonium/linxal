@@ -4,8 +4,7 @@ use lapack::c::{ssyev, dsyev, cheev, zheev};
 use super::types::{Solution, EigenError};
 use impl_prelude::*;
 
-pub trait SymEigen : Sized
-{
+pub trait SymEigen: Sized {
     type SingularValue;
     type Solution;
 
@@ -14,16 +13,22 @@ pub trait SymEigen : Sized
     /// The input matrix is mutated as part of the computation. Use
     /// [`.values()`](#tymethod.values) if you need to preserve the original
     /// matrix.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
-        Result<Array<Self::SingularValue, Ix>, EigenError> where D: DataMut<Elem=Self>;
+    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
+                      uplo: Symmetric,
+                      with_vectors: bool)
+                      -> Result<Array<Self::SingularValue, Ix>, EigenError>
+        where D: DataMut<Elem = Self>;
 
     /// Return the eigenvalues of a symmetric matrix.
     ///
     /// # Remarks
     ///
     /// The input matrix is copied before the calculation takes place.
-    fn compute<D>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
-        Result<Self::Solution, EigenError> where D: Data<Elem=Self>;
+    fn compute<D>(mat: &ArrayBase<D, Ix2>,
+                  uplo: Symmetric,
+                  with_vectors: bool)
+                  -> Result<Self::Solution, EigenError>
+        where D: Data<Elem = Self>;
 }
 
 macro_rules! impl_sym_eigen {
@@ -63,7 +68,10 @@ macro_rules! impl_sym_eigen {
             }
 
 
-            fn compute<D>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) -> Result<Self::Solution, EigenError> where D: Data<Elem=Self> {
+            fn compute<D>(mat: &ArrayBase<D, Ix2>,
+                          uplo: Symmetric,
+                          with_vectors: bool) -> Result<Self::Solution, EigenError>
+                where D: Data<Elem=Self> {
                 let vec: Vec<Self> = mat.iter().cloned().collect();
                 let mut new_mat = Array::from_shape_vec(mat.dim(), vec).unwrap();
                 Self::compute_mut(&mut new_mat, uplo, with_vectors).map(|values| {
@@ -84,6 +92,4 @@ impl_sym_eigen!(f64, f64, dsyev);
 impl_sym_eigen!(c64, f64, zheev);
 
 #[cfg(test)]
-mod tests {
-
-}
+mod tests {}

@@ -1,6 +1,6 @@
 use ndarray::prelude::*;
 use ndarray::{Ix2, DataMut};
-use lapack::c::{Layout};
+use lapack::c::Layout;
 use std::slice;
 
 /// Return an array with the specified dimensions and layout.
@@ -9,7 +9,7 @@ use std::slice;
 pub fn matrix_with_layout<T: Default>(d: Ix2, layout: Layout) -> Array<T, Ix2> {
     Array::default(match layout {
         Layout::RowMajor => d.into(),
-        Layout::ColumnMajor => d.f()
+        Layout::ColumnMajor => d.f(),
     })
 }
 
@@ -18,7 +18,8 @@ pub fn matrix_with_layout<T: Default>(d: Ix2, layout: Layout) -> Array<T, Ix2> {
 /// For LAPACKE methods, the memory layout does not need to be
 /// contiguous. We only required that either rows or columns are
 /// contiguous.
-pub fn slice_and_layout_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, Ix2>) -> Option<(&mut [S::Elem], Layout, Ixs)> {
+pub fn slice_and_layout_mut<D, S: DataMut<Elem = D>>(mat: &mut ArrayBase<S, Ix2>)
+                                                     -> Option<(&mut [S::Elem], Layout, Ixs)> {
     let strides = {
         let s = mat.strides();
         (s[0], s[1])
@@ -38,16 +39,14 @@ pub fn slice_and_layout_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, Ix2>) 
             slice::from_raw_parts_mut(mat.as_mut_ptr(), nelem)
         };
         Some((s, Layout::RowMajor, m))
-    }
-    else if strides.0 == 0 {
+    } else if strides.0 == 0 {
         let n = strides.1;
         let s = unsafe {
             let nelem: usize = (dim.1 - 1) * n as usize + dim.0;
             slice::from_raw_parts_mut(mat.as_mut_ptr(), nelem)
         };
         Some((s, Layout::ColumnMajor, n))
-    }
-    else {
+    } else {
         None
     }
 }
@@ -61,9 +60,9 @@ pub fn slice_and_layout_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, Ix2>) 
 /// contiguous.
 ///
 /// Returns None if the layout can't be matched.
-pub fn slice_and_layout_matching_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, Ix2>, layout: Layout) ->
-    Option<(&mut [S::Elem], Ixs)>
-{
+pub fn slice_and_layout_matching_mut<D, S: DataMut<Elem = D>>(mat: &mut ArrayBase<S, Ix2>,
+                                                              layout: Layout)
+                                                              -> Option<(&mut [S::Elem], Ixs)> {
     let dim = mat.dim();
 
     // For column vectors, we can choose whatever layout we want.
@@ -74,13 +73,13 @@ pub fn slice_and_layout_matching_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<
             let nelem: usize = (dim.0 - 1) * m as usize + dim.1;
             slice::from_raw_parts_mut(mat.as_mut_ptr(), nelem)
         };
-        return Some((s, m))
+        return Some((s, m));
     }
 
     // Otherwise, we just use the normal method and check for a match.
     if let Some((slice, lo, ld)) = slice_and_layout_mut(mat) {
         if lo == layout {
-            return Some((slice, ld))
+            return Some((slice, ld));
         }
     }
 

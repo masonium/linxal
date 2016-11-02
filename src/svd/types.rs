@@ -6,11 +6,9 @@ use std::fmt::Display;
 ///
 /// A type implementing `SingularValue` can be returned as a singular
 /// value by `SVD::compute*`.
-pub trait SingularValue: Float + Display + ToPrimitive {
-}
+pub trait SingularValue: Float + Display + ToPrimitive {}
 
-impl<T: Float + Display + ToPrimitive> SingularValue for T {
-}
+impl<T: Float + Display + ToPrimitive> SingularValue for T {}
 
 
 /// A solution to the singular value decomposition.
@@ -31,7 +29,7 @@ pub struct SVDSolution<IV: Sized, SV: Sized> {
     /// The matrix V^t of singular vectors.
     ///
     /// The transpose of V is stored, not V itself.
-    pub right_vectors: Option<Array<IV, (Ix, Ix)>>
+    pub right_vectors: Option<Array<IV, (Ix, Ix)>>,
 }
 
 /// An error resulting from a `SVD::compute*` method.
@@ -39,5 +37,5 @@ pub struct SVDSolution<IV: Sized, SV: Sized> {
 pub enum SVDError {
     Unconverged,
     IllegalParameter(i32),
-    BadLayout
+    BadLayout,
 }

@@ -5,20 +5,25 @@ use super::types::SolveError;
 /// Implements `compute_*` methods to solve systems of linear equations.
 pub trait SolveLinear: Sized + Clone {
     /// Solve the linear system A * x = B for square matrix `a` and rectangular matrix `b`.
-    fn compute_multi_into<D1, D2>(a: ArrayBase<D1, Ix2>, b: ArrayBase<D2, Ix2>) ->
-        Result<ArrayBase<D2, Ix2>, SolveError>
-        where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self>;
+    fn compute_multi_into<D1, D2>(a: ArrayBase<D1, Ix2>,
+                                  b: ArrayBase<D2, Ix2>)
+                                  -> Result<ArrayBase<D2, Ix2>, SolveError>
+        where D1: DataMut<Elem = Self>,
+              D2: DataMut<Elem = Self>;
 
     /// Solve the linear system A * x = b for square matrix `a` and column vector `b`.
-    fn compute_into<D1, D2>(a: ArrayBase<D1, Ix2>, b: ArrayBase<D2, Ix>) ->
-        Result<ArrayBase<D2, Ix>, SolveError>
-        where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
+    fn compute_into<D1, D2>(a: ArrayBase<D1, Ix2>,
+                            b: ArrayBase<D2, Ix>)
+                            -> Result<ArrayBase<D2, Ix>, SolveError>
+        where D1: DataMut<Elem = Self>,
+              D2: DataMut<Elem = Self>
+    {
         let n = b.dim();
 
         // Create a new matrix, where the column vector is a degenerate 2-D matrix.
         let b_mat = match b.into_shape((n, 1)) {
             Ok(x) => x,
-            Err(_) => return Err(SolveError::BadLayout)
+            Err(_) => return Err(SolveError::BadLayout),
         };
 
         // Call the original
@@ -29,23 +34,30 @@ pub trait SolveLinear: Sized + Clone {
     }
 
     /// Solve the linear system A * x = B for square matrix `a` and rectangular matrix `b`.
-    fn compute_multi<D1, D2>(a: &ArrayBase<D1, Ix2>, b: &ArrayBase<D2, Ix2>) -> Result<Array<Self, Ix2>, SolveError>
-        where D1: Data<Elem=Self>, D2: Data<Elem=Self> {
+    fn compute_multi<D1, D2>(a: &ArrayBase<D1, Ix2>,
+                             b: &ArrayBase<D2, Ix2>)
+                             -> Result<Array<Self, Ix2>, SolveError>
+        where D1: Data<Elem = Self>,
+              D2: Data<Elem = Self>
+    {
 
         let a_copy = a.to_owned();
         let b_copy = b.to_owned();
-        Self::compute_multi_into(a_copy,  b_copy)
+        Self::compute_multi_into(a_copy, b_copy)
     }
 
     /// Solve the linear system A * x = b for square matrix `a` and column vector `b`.
-    fn compute<D1, D2>(a: &ArrayBase<D1, Ix2>, b: &ArrayBase<D2, Ix>) -> Result<Array<Self, Ix>, SolveError>
-        where D1: Data<Elem=Self>, D2: Data<Elem=Self> {
+    fn compute<D1, D2>(a: &ArrayBase<D1, Ix2>,
+                       b: &ArrayBase<D2, Ix>)
+                       -> Result<Array<Self, Ix>, SolveError>
+        where D1: Data<Elem = Self>,
+              D2: Data<Elem = Self>
+    {
 
         let a_copy = a.to_owned();
         let b_copy = b.to_owned();
         Self::compute_into(a_copy, b_copy)
     }
-
 }
 
 macro_rules! impl_solve_linear {

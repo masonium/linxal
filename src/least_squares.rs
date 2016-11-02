@@ -5,7 +5,7 @@ use lapack::c::{sgels, sgelsd, dgels, dgelsd, cgels, cgelsd, zgels, zgelsd};
 
 pub struct LeastSquaresSolution<T, D: Dimension> {
     pub solution: Array<T, D>,
-    pub rank: usize
+    pub rank: usize,
 }
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ pub enum LeastSquaresError {
     Degenerate,
 
     /// Should never happend.
-    IllegalParameter(i32)
+    IllegalParameter(i32),
 }
 
 /// Multivariable least squares problem.
@@ -41,33 +41,53 @@ pub enum LeastSquaresError {
 /// `x_i` to min(||A*`x_i` - `b_i`||) for each column `b_i` of `b`. They
 /// do *not* compute the solution `X` of min(||A*X - b||).
 pub trait LeastSquares: Sized + Clone {
-    /// Returns the solution `x` to the least squares problem min(||A*x - b||), for a non-degenerate `A`.
+    /// Returns the solution `x` to the least squares problem
+    /// min(||A*x - b||), for a non-degenerate `A`.
     ///
     /// # Errors
-    /// Returns `LeastSquaresError::Degenerate` when the coefficient matrix `a` is not of full rank (rank(`a`) < min(m, n)).
-    fn compute_multi_full_into<D1, D2>(a: ArrayBase<D1, Ix2>, b: ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self>;
+    ///
+    /// Returns `LeastSquaresError::Degenerate` when the coefficient
+    /// matrix `a` is not of full rank (rank(`a`) < min(m, n)).
+    fn compute_multi_full_into<D1, D2>
+        (a: ArrayBase<D1, Ix2>,
+         b: ArrayBase<D2, Ix2>)
+         -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+        where D1: DataMut<Elem = Self>,
+              D2: DataMut<Elem = Self>;
 
 
     /// Similar to `compute_multi_full_into`, but doesn't modify the inputs.
     ///
     /// See [compute_multi_full_into]().
-    fn compute_multi_full<D1, D2>(a: &ArrayBase<D1, Ix2>, b: &ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: Data<Elem=Self>, D2: Data<Elem=Self> {
+    fn compute_multi_full<D1, D2>(a: &ArrayBase<D1, Ix2>,
+                                  b: &ArrayBase<D2, Ix2>)
+                                  -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+        where D1: Data<Elem = Self>,
+              D2: Data<Elem = Self>
+    {
         Self::compute_multi_full_into(a.to_owned(), b.to_owned())
     }
 
     /// Returns the solution `x` to the least squares problem min(||A*x - b||), for any `A`.
     ///
     /// The matrix `a` can possibly be degenerate.
-    fn compute_multi_degenerate<D1, D2>(a: &ArrayBase<D1, Ix2>, b: &ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: Data<Elem=Self>, D2: Data<Elem=Self> {
+    fn compute_multi_degenerate<D1, D2>
+        (a: &ArrayBase<D1, Ix2>,
+         b: &ArrayBase<D2, Ix2>)
+         -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+        where D1: Data<Elem = Self>,
+              D2: Data<Elem = Self>
+    {
         Self::compute_multi_degenerate_into(a.to_owned(), b.to_owned())
     }
 
     /// Similar to `compute_multi_degenerate_into`, but doesn't modify the inputs.
-    fn compute_multi_degenerate_into<D1, D2>(a: ArrayBase<D1, Ix2>, b: ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self>;
+    fn compute_multi_degenerate_into<D1, D2>
+        (a: ArrayBase<D1, Ix2>,
+         b: ArrayBase<D2, Ix2>)
+         -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+        where D1: DataMut<Elem = Self>,
+              D2: DataMut<Elem = Self>;
 
     /// Returns the solution `x` to the least squares problem min(||A*x - b||) for any `A`.
     ///
@@ -86,18 +106,20 @@ pub trait LeastSquares: Sized + Clone {
     /// will return a `Degenerate` error.
     ///
     /// This method will never return `LeastSquaresError::Degenerate`.
-    fn compute_multi<D1, D2>(a: &ArrayBase<D1, Ix2>, b: &ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: Data<Elem=Self>, D2: Data<Elem=Self> {
+    fn compute_multi<D1, D2>(a: &ArrayBase<D1, Ix2>,
+                             b: &ArrayBase<D2, Ix2>)
+                             -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+        where D1: Data<Elem = Self>,
+              D2: Data<Elem = Self>
+    {
 
         // Assume the matrix is full rank and compute the solution.
         let r = Self::compute_multi_full(a, b);
         match r {
             // For degenerate matrices, call the degenerate version
-            Err(LeastSquaresError::Degenerate) => {
-                Self::compute_multi_degenerate(a, b)
-            },
+            Err(LeastSquaresError::Degenerate) => Self::compute_multi_degenerate(a, b),
             // For anything else, just forward the result.
-            x => x
+            x => x,
         }
     }
 
@@ -119,28 +141,37 @@ pub trait LeastSquares: Sized + Clone {
     /// will return a `Degenerate` error.
     ///
     /// This method will never return `LeastSquaresError::Degenerate`.
-    fn compute<D1, D2>(a: &ArrayBase<D1, Ix2>, b: &ArrayBase<D2, Ix>) -> Result<LeastSquaresSolution<Self, Ix>, LeastSquaresError>
-        where D1: Data<Elem=Self>, D2: Data<Elem=Self> {
+    fn compute<D1, D2>(a: &ArrayBase<D1, Ix2>,
+                       b: &ArrayBase<D2, Ix>)
+                       -> Result<LeastSquaresSolution<Self, Ix>, LeastSquaresError>
+        where D1: Data<Elem = Self>,
+              D2: Data<Elem = Self>
+    {
         let n = b.dim();
 
         // Create a new matrix, where the column vector is a degenerate 2-D matrix.
         let b_mat = match b.to_owned().into_shape((n, 1)) {
             Ok(x) => x,
-            Err(_) => return Err(LeastSquaresError::BadLayout)
+            Err(_) => return Err(LeastSquaresError::BadLayout),
         };
 
         // Call the original
         let res = try!(Self::compute_multi(a, &b_mat));
 
         // Return the
-        Ok(LeastSquaresSolution{ solution: res.solution.into_shape(n).unwrap(), rank: res.rank })
+        Ok(LeastSquaresSolution {
+            solution: res.solution.into_shape(n).unwrap(),
+            rank: res.rank,
+        })
 
     }
 }
 
 /// Resize the given solution to the correct matrix size, based on the
 /// RHS input size.
-fn resize_solution<T: Clone + Default, D>(mut b_sol: ArrayBase<D, Ix2>, n: usize) -> Array<T, Ix2> where D: DataMut<Elem=T> {
+fn resize_solution<T: Clone + Default, D>(mut b_sol: ArrayBase<D, Ix2>, n: usize) -> Array<T, Ix2>
+    where D: DataMut<Elem = T>
+{
     let b_dim = b_sol.dim();
 
     if b_dim.0 > n {
@@ -158,24 +189,28 @@ fn resize_solution<T: Clone + Default, D>(mut b_sol: ArrayBase<D, Ix2>, n: usize
 macro_rules! impl_least_squares {
     ($impl_type:ty, $sv_type:ty, $full_func:ident, $degen_func:ident) => (
         impl LeastSquares for $impl_type {
-            fn compute_multi_full_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+            fn compute_multi_full_into<D1, D2>(
+                mut a: ArrayBase<D1, Ix2>,
+                mut b: ArrayBase<D2, Ix2>)
+                -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+
                 where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
 
                 let a_dim = a.dim();
                 let b_dim = b.dim();
 
-                // confirm same number of rows.
+// confirm same number of rows.
                 if a_dim.0 != b_dim.0 {
                     return Err(LeastSquaresError::InconsistentDimensions(a_dim.0, b_dim.0));
                 }
 
-                // confirm layouts
+// confirm layouts
                 let (a_slice, layout, lda) = match slice_and_layout_mut(&mut a) {
                     Some(x) => x,
                     None => return Err(LeastSquaresError::BadLayout)
                 };
 
-                // compute result
+// compute result
                 let info = {
                     let (b_slice, ldb) = match slice_and_layout_matching_mut(&mut b, layout) {
                         Some(x) => x,
@@ -188,7 +223,10 @@ macro_rules! impl_least_squares {
                 };
 
                 if info == 0 {
-                    Ok(LeastSquaresSolution { solution: resize_solution(b, a_dim.1), rank: cmp::min(a_dim.0, a_dim.1) })
+                    Ok(LeastSquaresSolution {
+                        solution: resize_solution(b, a_dim.1),
+                        rank: cmp::min(a_dim.0, a_dim.1)
+                    })
                 } else if info < 0 {
                     Err(LeastSquaresError::IllegalParameter(-info))
                 } else {
@@ -196,18 +234,21 @@ macro_rules! impl_least_squares {
                 }
             }
 
-            fn compute_multi_degenerate_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
+            fn compute_multi_degenerate_into<D1, D2>(
+                mut a: ArrayBase<D1, Ix2>,
+                mut b: ArrayBase<D2, Ix2>)
+                -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
                 where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
 
                 let a_dim = a.dim();
                 let b_dim = b.dim();
 
-                // confirm same number of rows.
+// confirm same number of rows.
                 if a_dim.0 != b_dim.0 {
                     return Err(LeastSquaresError::InconsistentDimensions(a_dim.0, b_dim.0));
                 }
 
-                // confirm layouts
+// confirm layouts
                 let (a_slice, layout, lda) = match slice_and_layout_mut(&mut a) {
                     Some(x) => x,
                     None => return Err(LeastSquaresError::BadLayout)
@@ -216,7 +257,7 @@ macro_rules! impl_least_squares {
                 let mut svs: Array<$sv_type, Ix> = Array::default(cmp::min(a_dim.0, a_dim.1));
                 let mut rank: i32 = 0;
 
-                // compute result
+// compute result
                 let info = {
                     let (b_slice, ldb) = match slice_and_layout_matching_mut(&mut b, layout) {
                         Some(x) => x,
@@ -231,7 +272,9 @@ macro_rules! impl_least_squares {
                 };
 
                 if info == 0 {
-                    Ok(LeastSquaresSolution { solution: resize_solution(b, a_dim.1), rank: rank as usize })
+                    Ok(LeastSquaresSolution {
+                        solution: resize_solution(b, a_dim.1),
+                        rank: rank as usize })
                 } else if info < 0 {
                     Err(LeastSquaresError::IllegalParameter(-info))
                 } else {

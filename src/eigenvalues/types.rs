@@ -6,7 +6,7 @@ pub enum EigenError {
     NotSquare,
     BadLayout,
     BadParameter(i32),
-    Failed
+    Failed,
 }
 
 /// Solution to an eigenvalue problem..
@@ -17,6 +17,5 @@ pub enum EigenError {
 pub struct Solution<IV, EV> {
     pub values: Array<EV, Ix>,
     pub left_vectors: Option<Array<IV, (Ix, Ix)>>,
-    pub right_vectors: Option<Array<IV, (Ix, Ix)>>
+    pub right_vectors: Option<Array<IV, (Ix, Ix)>>,
 }
-

@@ -3,19 +3,28 @@ use lapack::c::{sgeev, dgeev, cgeev, zgeev};
 use impl_prelude::*;
 use super::types::{EigenError, Solution};
 
-pub trait Eigen : Sized + Clone
-{
+pub trait Eigen: Sized + Clone {
     type Eigv;
     type Solution;
 
-    /// Return the eigenvalues and, optionally, the left and/or right eigenvectors of a general matrix.
+    /// Return the eigenvalues and, optionally, the left and/or right
+    /// eigenvectors of a general matrix.
     ///
-    /// The entries in the input matrix `mat` are modified when calculating the eigenvalues.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_left: bool, compute_right: bool) ->
-        Result<Self::Solution, EigenError> where D:DataMut<Elem=Self>;
+    /// The entries in the input matrix `mat` are modified when
+    /// calculating the eigenvalues.
+    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
+                      compute_left: bool,
+                      compute_right: bool)
+                      -> Result<Self::Solution, EigenError>
+        where D: DataMut<Elem = Self>;
 
     /// Return the eigenvvalues and, optionally, the eigenvectors of a general matrix.
-    fn compute<D>(mat: &ArrayBase<D, Ix2>, compute_left: bool, compute_right: bool) -> Result<Self::Solution, EigenError> where D: Data<Elem=Self> {
+    fn compute<D>(mat: &ArrayBase<D, Ix2>,
+                  compute_left: bool,
+                  compute_right: bool)
+                  -> Result<Self::Solution, EigenError>
+        where D: Data<Elem = Self>
+    {
         let vec: Vec<Self> = mat.iter().cloned().collect();
         let mut new_mat = Array::from_shape_vec(mat.dim(), vec).unwrap();
         Self::compute_mut(&mut new_mat, compute_left, compute_right)
@@ -30,7 +39,8 @@ macro_rules! impl_eigen_real {
             type Eigv = $eigv_type;
             type Solution = Solution<$impl_type, $eigv_type>;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_left: bool, compute_right: bool) ->
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
+                              compute_left: bool, compute_right: bool) ->
                 Result<Self::Solution, EigenError>
                 where D:DataMut<Elem=Self> {
 
@@ -60,7 +70,8 @@ macro_rules! impl_eigen_real {
                                  vr.as_slice_mut().unwrap(), n);
 
                 if info == 0 {
-                    let vals: Vec<_> = values_real.iter().zip(values_imag.iter()).map(|(x, y)| Self::Eigv::new(*x, *y)).collect();
+                    let vals: Vec<_> = values_real.iter().zip(values_imag.iter())
+                        .map(|(x, y)| Self::Eigv::new(*x, *y)).collect();
                     Ok(Solution {
                         values: ArrayBase::from_vec(vals),
                         left_vectors: if compute_left { Some(vl) } else { None },
@@ -85,8 +96,9 @@ macro_rules! impl_eigen_complex {
             type Eigv = $impl_type;
             type Solution = Solution<$impl_type, $impl_type>;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, compute_left: bool, compute_right: bool) ->
-                Result<Self::Solution, EigenError>
+            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
+                              compute_left: bool, compute_right: bool)
+                              -> Result<Self::Solution, EigenError>
                 where D:DataMut<Elem=Self> {
 
                 let dim = mat.dim();
@@ -134,6 +146,4 @@ impl_eigen_complex!(c32, cgeev);
 impl_eigen_complex!(c64, zgeev);
 
 #[cfg(test)]
-mod tests {
-
-}
+mod tests {}

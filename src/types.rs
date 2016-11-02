@@ -12,7 +12,7 @@ pub enum Symmetric {
     Upper = b'U',
 
     /// Read elements from the lower-triangular portion of the matrix
-    Lower =  b'L'
+    Lower = b'L',
 }
 
 /// Universal `rula` error enum
@@ -23,7 +23,7 @@ pub enum Error {
     SVD(SVDError),
     Eigen(EigenError),
     LeastSquares(LeastSquaresError),
-    SolveLinear(SolveError)
+    SolveLinear(SolveError),
 }
 
 impl From<SVDError> for Error {

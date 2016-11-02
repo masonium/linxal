@@ -21,5 +21,5 @@ pub enum SolveError {
     NotSquare(usize, usize),
 
     /// The dimensions of `a` and `b` do not match.
-    InconsistentDimensions(usize, usize)
+    InconsistentDimensions(usize, usize),
 }

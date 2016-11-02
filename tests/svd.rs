@@ -6,7 +6,7 @@ extern crate lapack;
 
 use ndarray::prelude::*;
 use rula::prelude::*;
-use ndarray::{Ix2};
+use ndarray::Ix2;
 use num_traits::{One, Zero};
 
 /// Identity matrix SVD
@@ -15,9 +15,9 @@ pub fn svd_test_identity<SV: SingularValue + Magnitude, T: SVD<SV> + One + Zero>
     let m: Array<T, Ix2> = Array::eye(N);
     let solution = SVD::compute(&m, false, false);
     assert!(solution.is_ok());
-    let values  = solution.unwrap();
+    let values = solution.unwrap();
 
-    let truth =  Array::from_vec(vec![SV::one(); N]);
+    let truth = Array::from_vec(vec![SV::one(); N]);
     assert_in_tol!(&values.values, &truth, 1e-5);
 }
 
