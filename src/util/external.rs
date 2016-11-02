@@ -6,25 +6,25 @@ pub trait Magnitude: Copy {
 
 impl Magnitude for f32 {
     fn mag(self) -> f64 {
-        return self.abs() as f64;
+        self.abs() as f64
     }
 }
 
 impl Magnitude for f64 {
     fn mag(self) -> f64 {
-        return self.abs();
+        self.abs()
     }
 }
 
 impl Magnitude for c32 {
     fn mag(self) -> f64 {
-        return self.norm() as f64;
+        self.norm() as f64
     }
 }
 
 impl Magnitude for c64 {
     fn mag(self) -> f64 {
-        return self.norm();
+        self.norm()
     }
 }
 

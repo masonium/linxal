@@ -74,8 +74,8 @@ macro_rules! stlc {
             const N: usize = 100;
             let mut m: Array<$c_type, Ix2> = Array::zeros((N, N));
             let mut svs = Array::default(N);
-            for i in 0..N {
-                svs[i] = ((N - i) as $sv).into();
+            for (i, sv) in svs.iter_mut().enumerate() {
+                *sv = ((N - i) as $sv).into();
             }
 
             m.diag_mut().assign(&svs);

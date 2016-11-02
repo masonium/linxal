@@ -38,7 +38,7 @@ pub enum LeastSquaresError {
 /// the solution returned is one of minimum norm.
 ///
 /// The `compute_multi_*` functions compute independents solutions
-/// `x_i` to min(||A*x_i - b_i||) for each column `b_i` of `b`. They
+/// `x_i` to min(||A*`x_i` - `b_i`||) for each column `b_i` of `b`. They
 /// do *not* compute the solution `X` of min(||A*X - b||).
 pub trait LeastSquares: Sized + Clone {
     /// Returns the solution `x` to the least squares problem min(||A*x - b||), for a non-degenerate `A`.
@@ -94,7 +94,7 @@ pub trait LeastSquares: Sized + Clone {
         match r {
             // For degenerate matrices, call the degenerate version
             Err(LeastSquaresError::Degenerate) => {
-                return Self::compute_multi_degenerate(a, b);
+                Self::compute_multi_degenerate(a, b)
             },
             // For anything else, just forward the result.
             x => x
