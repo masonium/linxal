@@ -4,6 +4,7 @@ use svd::types::SVDError;
 use eigenvalues::types::EigenError;
 use solve_linear::types::SolveError;
 use least_squares::LeastSquaresError;
+pub use lapack::{c32, c64};
 
 /// Enum for symmetric matrix inputs.
 #[repr(u8)]
@@ -47,5 +48,33 @@ impl From<LeastSquaresError> for Error {
 impl From<SolveError> for Error {
     fn from(e: SolveError) -> Error {
         Error::SolveLinear(e)
+    }
+}
+
+pub trait Magnitude: Copy {
+    fn mag(self) -> f64;
+}
+
+impl Magnitude for f32 {
+    fn mag(self) -> f64 {
+        self.abs() as f64
+    }
+}
+
+impl Magnitude for f64 {
+    fn mag(self) -> f64 {
+        self.abs()
+    }
+}
+
+impl Magnitude for c32 {
+    fn mag(self) -> f64 {
+        self.norm() as f64
+    }
+}
+
+impl Magnitude for c64 {
+    fn mag(self) -> f64 {
+        self.norm()
     }
 }

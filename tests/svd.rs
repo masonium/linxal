@@ -4,9 +4,9 @@ extern crate ndarray;
 extern crate linxal;
 extern crate lapack;
 
-use ndarray::prelude::*;
-use linxal::prelude::*;
-use ndarray::Ix2;
+use ndarray::{Array, Ix2};
+use linxal::svd::{SVD, SingularValue};
+use linxal::types::{Magnitude, c32, c64};
 use num_traits::{One, Zero};
 
 /// Identity matrix SVD

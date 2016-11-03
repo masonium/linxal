@@ -7,3 +7,7 @@
 pub mod types;
 pub mod general;
 pub mod symmetric;
+
+pub use self::types::SolveError;
+pub use self::general::SolveLinear;
+pub use self::symmetric::SymmetricSolveLinear;

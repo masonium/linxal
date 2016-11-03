@@ -4,9 +4,9 @@ extern crate ndarray;
 extern crate linxal;
 extern crate lapack;
 
-use ndarray::prelude::*;
-use linxal::prelude::*;
-use ndarray::Ix2;
+use ndarray::{Array, Ix, Ix2, Axis};
+use linxal::solve_linear::{SolveLinear};
+use linxal::types::{Magnitude};
 
 #[test]
 pub fn solve_linear_vector() {

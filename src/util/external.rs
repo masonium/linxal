@@ -1,33 +1,3 @@
-use lapack::{c64, c32};
-
-pub trait Magnitude: Copy {
-    fn mag(self) -> f64;
-}
-
-impl Magnitude for f32 {
-    fn mag(self) -> f64 {
-        self.abs() as f64
-    }
-}
-
-impl Magnitude for f64 {
-    fn mag(self) -> f64 {
-        self.abs()
-    }
-}
-
-impl Magnitude for c32 {
-    fn mag(self) -> f64 {
-        self.norm() as f64
-    }
-}
-
-impl Magnitude for c64 {
-    fn mag(self) -> f64 {
-        self.norm()
-    }
-}
-
 /// Assert that two ndarrays are logically equivalent, within
 /// tolerance.
 ///
