@@ -8,18 +8,18 @@ use ndarray::{arr1, arr2};
 
 #[test]
 fn try_eig() {
-    let mut m = arr2(&[[1.0f32, 2.0], [2.0, 1.0]]);
+    let m = arr2(&[[1.0f32, 2.0], [2.0, 1.0]]);
 
-    let r = Eigen::compute_mut(&mut m, false, true);
+    let r = Eigen::compute_into(m, false, true);
     assert!(r.is_ok());
 }
 
 #[test]
 fn try_eig_func() {
-    let mut m = arr2(&[[1.0f32, 2.0],
-                       [-2.0, 1.0]]);
+    let m = arr2(&[[1.0f32, 2.0],
+                   [-2.0, 1.0]]);
 
-    let r = Eigen::compute_mut(&mut m, false, true);
+    let r = Eigen::compute_into(m, false, true);
     assert!(r.is_ok());
 
     let r = r.unwrap();

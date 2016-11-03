@@ -52,8 +52,8 @@ pub trait LeastSquares: Sized + Clone {
         (a: ArrayBase<D1, Ix2>,
          b: ArrayBase<D2, Ix2>)
          -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: DataMut<Elem = Self>,
-              D2: DataMut<Elem = Self>;
+        where D1: DataMut<Elem = Self> + DataOwned<Elem = Self>,
+              D2: DataMut<Elem = Self> + DataOwned<Elem = Self>;
 
 
     /// Similar to `compute_multi_full_into`, but doesn't modify the inputs.
@@ -86,8 +86,8 @@ pub trait LeastSquares: Sized + Clone {
         (a: ArrayBase<D1, Ix2>,
          b: ArrayBase<D2, Ix2>)
          -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-        where D1: DataMut<Elem = Self>,
-              D2: DataMut<Elem = Self>;
+        where D1: DataMut<Elem = Self> + DataOwned<Elem = Self>,
+              D2: DataMut<Elem = Self> + DataOwned<Elem = Self>;
 
     /// Returns the solution `x` to the least squares problem min(||A*x - b||) for any `A`.
     ///
@@ -194,7 +194,8 @@ macro_rules! impl_least_squares {
                 mut b: ArrayBase<D2, Ix2>)
                 -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
 
-                where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
+                where D1: DataMut<Elem=Self> + DataOwned<Elem = Self>,
+                      D2: DataMut<Elem=Self> + DataOwned<Elem = Self> {
 
                 let a_dim = a.dim();
                 let b_dim = b.dim();
@@ -238,7 +239,8 @@ macro_rules! impl_least_squares {
                 mut a: ArrayBase<D1, Ix2>,
                 mut b: ArrayBase<D2, Ix2>)
                 -> Result<LeastSquaresSolution<Self, Ix2>, LeastSquaresError>
-                where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
+                where D1: DataMut<Elem=Self> + DataOwned<Elem = Self>,
+                      D2: DataMut<Elem=Self> + DataOwned<Elem = Self> {
 
                 let a_dim = a.dim();
                 let b_dim = b.dim();

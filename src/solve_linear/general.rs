@@ -5,18 +5,21 @@ use super::types::SolveError;
 /// Implements `compute_*` methods to solve systems of linear equations.
 pub trait SolveLinear: Sized + Clone {
     /// Solve the linear system A * x = B for square matrix `a` and rectangular matrix `b`.
+    ///
+    /// This function is equivalent to solving A * x_i = b_i for each
+    /// column `b_i` of `b`.
     fn compute_multi_into<D1, D2>(a: ArrayBase<D1, Ix2>,
                                   b: ArrayBase<D2, Ix2>)
                                   -> Result<ArrayBase<D2, Ix2>, SolveError>
-        where D1: DataMut<Elem = Self>,
-              D2: DataMut<Elem = Self>;
+        where D1: DataMut<Elem = Self> + DataOwned<Elem = Self>,
+              D2: DataMut<Elem = Self> + DataOwned<Elem = Self>;
 
     /// Solve the linear system A * x = b for square matrix `a` and column vector `b`.
     fn compute_into<D1, D2>(a: ArrayBase<D1, Ix2>,
                             b: ArrayBase<D2, Ix>)
                             -> Result<ArrayBase<D2, Ix>, SolveError>
-        where D1: DataMut<Elem = Self>,
-              D2: DataMut<Elem = Self>
+        where D1: DataMut<Elem = Self> + DataOwned<Elem = Self>,
+              D2: DataMut<Elem = Self> + DataOwned<Elem = Self>
     {
         let n = b.dim();
 
@@ -63,10 +66,10 @@ pub trait SolveLinear: Sized + Clone {
 macro_rules! impl_solve_linear {
     ($impl_type: ty, $driver: ident) => (
         impl SolveLinear for $impl_type {
-            fn compute_multi_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>) ->
-                Result<ArrayBase<D2, Ix2>, SolveError>
-
-                where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
+            fn compute_multi_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>)
+                                          -> Result<ArrayBase<D2, Ix2>, SolveError>
+                where D1: DataMut<Elem=Self> + DataOwned<Elem = Self>,
+                      D2: DataMut<Elem=Self> + DataOwned<Elem = Self> {
 
                 // Make sure the input is square.
                 let dim = a.dim();

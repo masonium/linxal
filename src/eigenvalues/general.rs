@@ -12,11 +12,11 @@ pub trait Eigen: Sized + Clone {
     ///
     /// The entries in the input matrix `mat` are modified when
     /// calculating the eigenvalues.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
-                      compute_left: bool,
-                      compute_right: bool)
-                      -> Result<Self::Solution, EigenError>
-        where D: DataMut<Elem = Self>;
+    fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
+                       compute_left: bool,
+                       compute_right: bool)
+                       -> Result<Self::Solution, EigenError>
+        where D: DataOwned<Elem = Self> + DataMut<Elem = Self>;
 
     /// Return the eigenvvalues and, optionally, the eigenvectors of a general matrix.
     fn compute<D>(mat: &ArrayBase<D, Ix2>,
@@ -26,8 +26,8 @@ pub trait Eigen: Sized + Clone {
         where D: Data<Elem = Self>
     {
         let vec: Vec<Self> = mat.iter().cloned().collect();
-        let mut new_mat = Array::from_shape_vec(mat.dim(), vec).unwrap();
-        Self::compute_mut(&mut new_mat, compute_left, compute_right)
+        let new_mat = Array::from_shape_vec(mat.dim(), vec).unwrap();
+        Self::compute_into(new_mat, compute_left, compute_right)
     }
 }
 
@@ -39,10 +39,10 @@ macro_rules! impl_eigen_real {
             type Eigv = $eigv_type;
             type Solution = Solution<$impl_type, $eigv_type>;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
-                              compute_left: bool, compute_right: bool) ->
+            fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
+                               compute_left: bool, compute_right: bool) ->
                 Result<Self::Solution, EigenError>
-                where D:DataMut<Elem=Self> {
+                where D: DataMut<Elem=Self> + DataOwned<Elem=Self> {
 
                 let dim = mat.dim();
                 if dim.0 != dim.1 {
@@ -50,7 +50,7 @@ macro_rules! impl_eigen_real {
                 }
                 let n = mat.dim().0 as i32;
 
-                let (data_slice, layout, ld) = match slice_and_layout_mut(mat) {
+                let (data_slice, layout, ld) = match slice_and_layout_mut(&mut mat) {
                     Some(s) => s,
                     None => return Err(EigenError::BadLayout)
                 };
@@ -96,10 +96,10 @@ macro_rules! impl_eigen_complex {
             type Eigv = $impl_type;
             type Solution = Solution<$impl_type, $impl_type>;
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
-                              compute_left: bool, compute_right: bool)
-                              -> Result<Self::Solution, EigenError>
-                where D:DataMut<Elem=Self> {
+            fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
+                               compute_left: bool, compute_right: bool)
+                               -> Result<Self::Solution, EigenError>
+                where D: DataMut<Elem=Self> + DataOwned<Elem=Self> {
 
                 let dim = mat.dim();
                 if dim.0 != dim.1 {
@@ -108,7 +108,7 @@ macro_rules! impl_eigen_complex {
 
                 let n = dim.0 as i32;
 
-                let (data_slice, layout, ld) = match slice_and_layout_mut(mat) {
+                let (data_slice, layout, ld) = match slice_and_layout_mut(&mut mat) {
                     Some(s) => s,
                     None => return Err(EigenError::BadLayout)
                 };

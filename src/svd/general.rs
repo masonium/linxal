@@ -10,34 +10,34 @@ const SVD_NORMAL_LIMIT: usize = 200;
 pub trait SVD<SV: SingularValue>: Sized + Clone {
     /// Compute the singular value decomposition of a matrix.
     ///
-    /// The elements of the input matrix `mat` are modified when this
-    /// method is called. Use `Self::compute` when you don't wnat to
-    /// modify the matrix.
+    /// Use `Self::compute` when you don't wnat to consume the input
+    /// matrix.
     ///
     /// On success, returns an `SVDSolution`, which always contains the
     /// singular values and optionally contains the left and right
     /// singular vectors. The left vectors (via the matrix `u`) are
     /// returned iff `compute_u` is true, and similarly for `vt` and
     /// `compute_vt`.
-    fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
-                      compute_u: bool,
-                      compute_vt: bool)
+    fn compute_into<D>(mat: ArrayBase<D, Ix2>,
+                       compute_u: bool,
+                       compute_vt: bool)
                       -> Result<SVDSolution<Self, SV>, SVDError>
-        where D: DataMut<Elem = Self>;
+        where D: DataMut<Elem = Self> + DataOwned<Elem = Self>;
 
     /// Comptue the singular value decomposition of a matrix.
     ///
-    /// Similar to [`SVD::compute_mut`](#tymethod.compute_mut), but the values are copied
-    /// beforehand. leaving the original matrix un-modified.
+    /// Similar to [`SVD::compute_into`](#tymethod.compute_into), but
+    /// the values are copied beforehand. leaving the original matrix
+    /// un-modified.
     fn compute<D>(mat: &ArrayBase<D, Ix2>,
                   compute_u: bool,
                   compute_vt: bool)
                   -> Result<SVDSolution<Self, SV>, SVDError>
-        where D: DataMut<Elem = Self>
+        where D: Data<Elem = Self>
     {
         let vec: Vec<Self> = mat.iter().cloned().collect();
-        let mut m = Array::from_shape_vec(mat.dim(), vec).unwrap();
-        Self::compute_mut(&mut m, compute_u, compute_vt)
+        let m = Array::from_shape_vec(mat.dim(), vec).unwrap();
+        Self::compute_into(m, compute_u, compute_vt)
     }
 }
 
@@ -72,17 +72,17 @@ macro_rules! impl_svd {
     ($impl_type:ident, $sv_type:ident, $svd_func:ident, $sdd_func:ident) => (
         impl SVD<$sv_type> for $impl_type {
 
-            fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
-                              mut compute_u: bool,
-                              mut compute_vt: bool)
-                              -> Result<SVDSolution<$impl_type, $sv_type>, SVDError>
-                where D: DataMut<Elem=Self> {
+            fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
+                               mut compute_u: bool,
+                               mut compute_vt: bool)
+                               -> Result<SVDSolution<$impl_type, $sv_type>, SVDError>
+                where D: DataMut<Elem=Self> + DataOwned<Elem = Self>{
 
                 let dim = mat.dim();
                 let (m, n) = dim;
                 let mut s = Array::default(cmp::min(m, n));
 
-                let (slice, layout, lda) = match slice_and_layout_mut(mat) {
+                let (slice, layout, lda) = match slice_and_layout_mut(&mut mat) {
                     Some(x) => x,
                     None => return Err(SVDError::BadLayout)
                 };
