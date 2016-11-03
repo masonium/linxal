@@ -2,7 +2,7 @@
 
 use ndarray::prelude::*;
 use ndarray::{Ix2, DataMut};
-use lapack::c::{Layout};
+use lapack::c::Layout;
 use std::slice;
 
 #[macro_export]
@@ -27,7 +27,7 @@ macro_rules! assert_eq_within_tol {
 pub fn matrix_with_layout<T: Default>(d: Ix2, layout: Layout) -> Array<T, Ix2> {
     Array::default(match layout {
         Layout::RowMajor => d.into(),
-        Layout::ColumnMajor => d.f()
+        Layout::ColumnMajor => d.f(),
     })
 }
 
@@ -38,7 +38,8 @@ pub fn matrix_with_layout<T: Default>(d: Ix2, layout: Layout) -> Array<T, Ix2> {
 /// For LAPACKE methods, the memory layout does not need to be
 /// contiguous. We only required that either rows or columns are
 /// contiguous.
-pub fn slice_and_layout_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, (Ix, Ix)>) -> Option<(&mut [S::Elem], Layout, Ixs)> {
+pub fn slice_and_layout_mut<D, S: DataMut<Elem = D>>(mat: &mut ArrayBase<S, (Ix, Ix)>)
+                                                     -> Option<(&mut [S::Elem], Layout, Ixs)> {
     let strides = {
         let s = mat.strides();
         (s[0], s[1])
@@ -58,16 +59,14 @@ pub fn slice_and_layout_mut<D, S: DataMut<Elem=D>>(mat: &mut ArrayBase<S, (Ix, I
             slice::from_raw_parts_mut(mat.as_mut_ptr(), nelem)
         };
         Some((s, Layout::RowMajor, m))
-    }
-    else if strides.0 == 0 {
+    } else if strides.0 == 0 {
         let n = strides.1;
         let s = unsafe {
             let nelem: usize = (dim.1 - 1) * n as usize + dim.0;
             slice::from_raw_parts_mut(mat.as_mut_ptr(), nelem)
         };
         Some((s, Layout::ColumnMajor, n))
-    }
-    else {
+    } else {
         None
     }
 }
