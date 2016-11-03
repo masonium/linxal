@@ -1,6 +1,6 @@
 [package]
 name = "linxal"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Mason Smith <masonium@gmail.com>"]
 
 description = "Linear Algebra package with rust-ndarray interface"
@@ -11,7 +11,7 @@ readme = "README.md"
 license = "MIT"
 keywords = ["linear-algebra", "ndarray", "matrix"]
 
-include = ["**/*.rs", "LICENSE", "README.md", "Cargo.toml"]
+include = ["**/*.rs", "LICENSE", "README.md", "CHANGELOG.md", "Cargo.toml"]
 
 [features]
 default = ["openblas"]
