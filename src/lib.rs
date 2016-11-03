@@ -74,6 +74,7 @@ pub mod svd;
 pub mod solve_linear;
 pub mod least_squares;
 pub mod types;
+pub mod factorization;
 
 #[macro_use]
 pub mod prelude;
