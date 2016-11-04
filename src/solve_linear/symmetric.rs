@@ -12,8 +12,8 @@ pub trait SymmetricSolveLinear: Sized + Clone {
                                   uplo: Symmetric,
                                   b: ArrayBase<D2, Ix2>)
                                   -> Result<ArrayBase<D2, Ix2>, SolveError>
-        where D1: DataMut<Elem = Self>,
-              D2: DataMut<Elem = Self>;
+        where D1: DataMut<Elem = Self> + DataOwned<Elem = Self>,
+              D2: DataMut<Elem = Self> + DataOwned<Elem = Self>;
 
     /// Solve the linear system A * x = b for symmetric/hermitian
     /// square matrix `a` and column vector `b`.
@@ -21,8 +21,8 @@ pub trait SymmetricSolveLinear: Sized + Clone {
                             uplo: Symmetric,
                             b: ArrayBase<D2, Ix>)
                             -> Result<ArrayBase<D2, Ix>, SolveError>
-        where D1: DataMut<Elem = Self>,
-              D2: DataMut<Elem = Self>
+        where D1: DataMut<Elem = Self> + DataOwned<Elem = Self>,
+              D2: DataMut<Elem = Self> + DataOwned<Elem = Self>
     {
         let n = b.dim();
 
@@ -77,9 +77,10 @@ macro_rules! impl_solve_linear {
                                           uplo: Symmetric,
                                           mut b: ArrayBase<D2, Ix2>)
                                           -> Result<ArrayBase<D2, Ix2>, SolveError>
-                where D1: DataMut<Elem=Self>, D2: DataMut<Elem=Self> {
+                where D1: DataMut<Elem=Self> + DataOwned<Elem = Self>,
+                      D2: DataMut<Elem=Self> + DataOwned<Elem = Self> {
 
-// Make sure the input is square.
+                // Make sure the input is square.
                 let dim = a.dim();
                 let b_dim = b.dim();
 

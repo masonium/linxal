@@ -20,19 +20,19 @@ Documentation can be found at [https://github.masonium.io/rustdoc/linxal/](https
 extern crate linxal;
 extern crate ndarray;
 
-use linxal::prelude::*;
-use ndarray::prelude::*;
+use linxal::eigenvalues::{Eigen};
+use linxal::types::{c32, Magnitude};
+use ndarray::{Array, arr1, arr2};
 
 fn main() {
-	let mut m = arr2(&[[1.0 as f32, 2.0],
-					   [-2.0, 1.0]]);
+	let m = arr2(&[[1.0f32, 2.0], [-2.0, 1.0]]);
 
-	let r = Eigen::compute_mut(&mut m, false, true);
+	let r = Eigen::compute_into(m, false, true);
 	assert!(r.is_ok());
 
 	let r = r.unwrap();
-	let true_evs = Array::from_vec(vec![c32::new(1.0, 2.0), c32::new(1.0, -2.0)]);
-	assert_eq_within_tol!(r.values, true_evs, 0.0001);
+	let true_evs = arr1(&[c32::new(1.0, 2.0), c32::new(1.0, -2.0)]);
+	assert_eq_within_tol!(true_evs, r.values, 0.01);
 }
 ```
 

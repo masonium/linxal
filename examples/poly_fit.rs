@@ -16,15 +16,17 @@ extern crate linxal;
 extern crate ndarray;
 extern crate rand;
 
-use linxal::prelude::*;
-use ndarray::prelude::*;
 use rand::thread_rng;
 use rand::distributions::{Normal, Sample};
+use linxal::least_squares::LeastSquares;
+use ndarray::{Array, arr1, Ix};
 
 /// Evalutate a polynomial f with coefficients `coefs` at `x`.
+///
+/// Input coefficients are ordered for lowest order to highest order.
 fn eval_poly(x: f32, coefs: &[f32]) -> f32 {
     // horner's rule
-    coefs.iter().fold(0.0, |acc, c| acc * x + *c)
+    coefs.iter().rev().fold(0.0, |acc, c| acc * x + *c)
 }
 
 /// Returns the row (1.0, x, x^2, ..., x^n)
@@ -44,7 +46,7 @@ fn main() {
     let mut err = Normal::new(0.0, 0.1);
 
     // (x-1)*(x-2)*(x-3)
-    let coefs = vec![1.0, 11.0, -6.0, -6.0];
+    let coefs = arr1(&[-6.0, -6.0, 11.0, 1.0]);
 
     const N: usize = 41;
 
@@ -61,12 +63,14 @@ fn main() {
     // Create the 'noisy' solution matrix.
     let mut b = Array::default((N, 1));
     for (i, x) in samples.iter().enumerate() {
-        b[(i, 0)] = eval_poly(*x, &coefs) + (err.sample(&mut rng) as f32);
+        b[(i, 0)] = eval_poly(*x, coefs.as_slice().unwrap()) + (err.sample(&mut rng) as f32);
     }
 
     // Use least squares to fit the matrix.
     let fitted_coefs = LeastSquares::compute_multi(&a, &b);
     assert!(fitted_coefs.is_ok());
 
-    println!("{:?}", fitted_coefs.unwrap().solution);
+    println!("Fitted Coefficients:\n{:?}", fitted_coefs.unwrap().solution.t());
+    println!("");
+    println!("Actual Coefficients:\n{:?}", coefs);
 }

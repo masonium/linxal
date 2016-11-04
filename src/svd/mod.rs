@@ -12,3 +12,6 @@
 
 pub mod general;
 pub mod types;
+
+pub use self::general::SVD;
+pub use self::types::{SVDSolution, SVDError, SingularValue};
