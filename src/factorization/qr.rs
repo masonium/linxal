@@ -1,6 +1,6 @@
 use impl_prelude::*;
 use lapack::c::{sgeqrf, sorgqr};
-use lapack::c::Layout;
+use std::fmt::Debug;
 
 /// Error for QR-based computations.
 #[derive(Debug, Clone)]
@@ -13,9 +13,6 @@ pub enum QRError {
 
     /// Implementation error, please submit as bug.
     IllegalParameter(i32),
-
-    /// LAPACKE implementation error
-    LapackeError,
 }
 
 /// Enum for muliplication by Q.
@@ -64,7 +61,25 @@ impl<T: QR> QRFactors<T> {
         })
     }
 
-    /// Return the first 'k' columns of the matrix Q of the QR
+    pub fn compute<D1: Data<Elem=T>>(mat: &ArrayBase<D1, Ix2>)
+                                     -> Result<QRFactors<T>, QRError> {
+        QR::compute(mat)
+    }
+
+
+    // /// Return `A * Q`, for the `Q` stored internally.
+    // pub fn left_multiply_by_q<D1: Data<Elem=T>>(&self, a: &ArrayBase<D1, Ix2>)
+    //                                             -> Result<Array<T, Ix2>, QRError> {
+    //     QR::multiply_by_q(&self.mat, &self.tau, a, QRMultiply::Left)
+    // }
+
+    // /// Return `A * Q`, for the `Q` stored internally.
+    // pub fn right_multiply_by_q<D1: Data<Elem=T>>(&self, a: &ArrayBase<D1, Ix2>)
+    //                                              -> Result<Array<T, Ix2>, QRError> {
+    //     QR::multiply_by_q(&self.mat, &self.tau, a, QRMultiply::Right)
+    // }
+
+    /// Return the first `k` columns of the matrix Q of the QR
     /// factorization.
     ///
     /// `Q` is generated such that the columns of `Q` form an
@@ -72,28 +87,49 @@ impl<T: QR> QRFactors<T> {
     ///
     /// When `k` is None, compute enough columns (`min(m, n)`) to
     /// faithfully recreate the original matrix A.
-    pub fn q<K: Into<Option<usize>>>(&self, k: K) -> Result<Array<T, Ix2>, QRError> {
+    pub fn qk<K: Into<Option<usize>>>(&self, k: K) -> Result<Array<T, Ix2>, QRError> {
         let kr = k.into();
         QR::compute_q(&self.mat, &self.tau, kr.unwrap_or(cmp::min(self.m, self.n)))
     }
 
+    /// Return the `m` by `min(m, n)` matrix `Q`.
+    ///
+    /// Equivalent to `self.qk(None)`.
+    ///
+    /// `self.q()` is large enough so that `&self.q() * &self.r()`
+    /// will faithfully reproduce the original matrix `A`.
+    #[inline]
+    pub fn q(&self) -> Result<Array<T, Ix2>, QRError> {
+        self.qk(None)
+    }
 
-    /// Multiply the input matrix by `Q`.
 
     /// Return the first 'k' rows of the matrix R of the QR
     /// factorization.
     ///
     /// When `k` is None, compute enough rows (`min(m, n)`) to
     /// faithfully recreate the original matrix A.
-    pub fn r<K: Into<Option<usize>>>(&self, k: K) -> Result<Array<T, Ix2>, QRError> {
+    pub fn rk<K: Into<Option<usize>>>(&self, k: K) -> Result<Array<T, Ix2>, QRError> {
         let kr = k.into();
         let p = kr.unwrap_or(cmp::min(self.m, self.n));
         QR::compute_r(&self.mat, p)
     }
+
+    /// Return the first `min(m, n)` by `n` matrix R of the QR
+    /// factorization.
+    ///
+    /// Equivalent to `self::rk(None)`.
+    ///
+    /// `self.r()` is large enough so that `&self.q() * &self.r()`
+    /// will faithfully reproduce the original matrix `A`.
+    #[inline]
+    pub fn r(&self) -> Result<Array<T, Ix2>, QRError> {
+        self.rk(None)
+    }
 }
 
 /// Trait defined on scalars to support QR-factorization.
-pub trait QR: Sized + Clone {
+pub trait QR: Sized + Clone + Debug {
     /// Return a `QRFactors` structure, containing the QR
     /// factorization of the input matrix `A`.
     ///
@@ -105,17 +141,20 @@ pub trait QR: Sized + Clone {
     fn compute<D1: Data>(a: &ArrayBase<D1, Ix2>) -> Result<QRFactors<Self>, QRError>
         where D1: Data<Elem = Self>
     {
-
         Self::compute_into(a.to_owned())
     }
 
-    fn mult_q<D1, D2>(mat: &ArrayBase<D1, Ix2>,
-                      tau: &[Self],
-                      a: &ArrayBase<D2, Ix2>,
-                      mult: QRMultiply)
-                      -> Result<Array<Self, Ix2>, QRError>
-        where D1: Data<Elem = Self>,
-              D2: Data<Elem = Self>;
+    /// multiply an input matrix by `Q`.
+    ///
+    /// Not intended to be used by end-users.  `side` indicates
+    /// whether to pre-or-post-multiply the input by `Q`.
+    // fn multiply_by_q<D1, D2>(mat: &ArrayBase<D1, Ix2>,
+    //                          tau: &[Self],
+    //                          a: &ArrayBase<D2, Ix2>,
+    //                          mult: QRMultiply)
+    //                   -> Result<Array<Self, Ix2>, QRError>
+    //     where D1: Data<Elem = Self>,
+    //           D2: Data<Elem = Self>;
 
     /// Compute Q from raw parts.
     ///
@@ -135,7 +174,6 @@ pub trait QR: Sized + Clone {
 
 impl QR for f32 {
     fn compute_into(mut a: Array<Self, Ix2>) -> Result<QRFactors<Self>, QRError> {
-
         let dim = a.dim();
 
         let (info, tau) = {
@@ -157,41 +195,74 @@ impl QR for f32 {
              tau)
         };
 
+        println!("{:?}\n {:?}\n", a, tau);
+
         if info == 0 {
             QRFactors::from_raw(a, tau)
         } else if info < 0 {
             Err(QRError::IllegalParameter(-info))
         } else {
-            Err(QRError::LapackeError)
+            unreachable!();
         }
     }
 
-    fn mult_q<D1, D2>(a: &ArrayBase<D1, Ix2>,
-                      tau: &[Self],
-                      c: &ArrayBase<D2, Ix2>,
-                      mult: QRMultiply)
-                      -> Result<Array<Self, Ix2>, QRError>
-        where D1: Data<Elem = Self>,
-              D2: Data<Elem = Self> {
-        let (m, n) = a.dim();
-        let (cm, cn) = c.dim();
+    // fn multiply_by_q<D1, D2>(a: &ArrayBase<D1, Ix2>,
+    //                          tau: &[Self],
+    //                          c: &ArrayBase<D2, Ix2>,
+    //                          mult: QRMultiply)
+    //                   -> Result<Array<Self, Ix2>, QRError>
+    //     where D1: Data<Elem = Self>,
+    //           D2: Data<Elem = Self>
+    // {
+    //     let (m, n) = a.dim();
+    //     let (cm, cn) = c.dim();
 
-        let matching_dim = match mult {
-            QRMultiply::Left => n == cm,
-            QRMultiply::Right => cn == m
-        };
+    //     let result_dim = match mult {
+    //         QRMultiply::Left => cm == n
+    //         QRMultiply::Right => {
+    //             if cn == m {
+    //                 (cm, n)
 
-        if !matching_dim {
-            return Err(QRError::InconsistentDimensions);
-        }
+    //     };
 
-        let (slice, layout, lda) = match slice_and_layout(&a) {
-            None => return Err(QRError::BadLayout),
-            Some(fwd) => fwd
-        };
+    //     if !matching_dim {
+    //         return Err(QRError::InconsistentDimensions);
+    //     }
 
-        unimplemented!();
-    }
+    //     let (slice, layout, lda) = match slice_and_layout(&a) {
+    //         None => return Err(QRError::BadLayout),
+    //         Some(fwd) => fwd,
+    //     };
+
+    //     let mut c_result = matrix_with_layout(c.dim(), layout);
+
+    //     let info = {
+    //         let (c_slice, ldc) = match slice_and_layout_mut(&mut c_result) {
+    //             None => unreachable!(),
+    //             Some((slice, _, ldc)) => (slice, ldc),
+    //         };
+
+    //         sormqr(layout,
+    //                mult as u8,
+    //                b'N',
+    //                cm as i32,
+    //                cn as i32,
+    //                tau.len() as i32,
+    //                slice,
+    //                lda as i32,
+    //                tau,
+    //                c_slice,
+    //                ldc as i32)
+    //     };
+
+    //     if info == 0 {
+    //         Ok(c_result)
+    //     } else if info < 0 {
+    //         Err(QRError::IllegalParameter(-info))
+    //     } else {
+    //         unreachable!();
+    //     }
+    // }
 
     fn compute_q<D1>(mat: &ArrayBase<D1, Ix2>,
                      tau: &[Self],
@@ -205,15 +276,23 @@ impl QR for f32 {
             return Err(QRError::InconsistentDimensions);
         }
 
-        let mut q = Array::default((m, k as usize));
+        // Initialize q with the
+        let mut q = mat.slice(s![.., ..k as isize]).to_owned();
 
-        let info = sorgqr(Layout::RowMajor,
-                          m as i32,
-                          k as i32,
-                          cmp::min(k, n) as i32,
-                          q.as_slice_mut().unwrap(),
-                          k as i32,
-                          tau);
+        let info = {
+            let (slice, layout, ldq) = match slice_and_layout_mut(&mut q) {
+                None => unreachable!(),
+                Some(fwd) => fwd,
+            };
+
+            sorgqr(layout,
+                   m as i32,
+                   k as i32,
+                   cmp::min(k, n) as i32,
+                   slice,
+                   ldq as i32,
+                   tau)
+        };
         if info == 0 {
             Ok(q)
         } else {
@@ -225,20 +304,21 @@ impl QR for f32 {
         where D1: Data<Elem = Self>
     {
         let (m, n) = mat.dim();
-        if k > m {
+
+        let nn = cmp::min(m, n);
+        if k > nn {
             return Err(QRError::InconsistentDimensions);
         }
 
         let mut r = Array::zeros((k as usize, n));
-        let nn = cmp::min(k, n) as isize;
 
         // Copy the upper triangular/trapezoidal part of the matrix to
         // R.
-        r.slice_mut(s![..nn, ..]).assign(&mat.slice(s![..nn, ..]));
+        r.slice_mut(s![..k as isize, ..]).assign(&mat.slice(s![..k as isize, ..]));
 
         // Replace zeros below the diagonal.
         for (i, mut row) in r.outer_iter_mut().enumerate().take(nn as usize) {
-            row.slice_mut(s![..(i - 1) as isize]).assign_scalar(&0.0);
+            row.slice_mut(s![..i as isize]).assign_scalar(&0.0);
         }
 
         Ok(r)
