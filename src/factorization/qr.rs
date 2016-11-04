@@ -1,6 +1,7 @@
 use impl_prelude::*;
 use lapack::c::{sgeqrf, sorgqr};
 use std::fmt::Debug;
+use types::Magnitude;
 
 /// Error for QR-based computations.
 #[derive(Debug, Clone)]
@@ -129,7 +130,7 @@ impl<T: QR> QRFactors<T> {
 }
 
 /// Trait defined on scalars to support QR-factorization.
-pub trait QR: Sized + Clone + Debug {
+pub trait QR: Sized + Clone + Magnitude + Debug {
     /// Return a `QRFactors` structure, containing the QR
     /// factorization of the input matrix `A`.
     ///
