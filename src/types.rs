@@ -4,6 +4,9 @@ use svd::types::SVDError;
 use eigenvalues::types::EigenError;
 use solve_linear::types::SolveError;
 use least_squares::LeastSquaresError;
+use std::ops::Sub;
+use std::fmt::Debug;
+use num_traits::Float;
 pub use lapack::{c32, c64};
 
 /// Enum for symmetric matrix inputs.
@@ -51,6 +54,7 @@ impl From<SolveError> for Error {
     }
 }
 
+/// Represents quantities that have a magnitude.
 pub trait Magnitude: Copy {
     fn mag(self) -> f64;
 }
@@ -78,3 +82,11 @@ impl Magnitude for c64 {
         self.norm()
     }
 }
+
+/// Common traits for all operations.
+pub trait LinxalScalar: Sized + Clone + Magnitude + Debug + Sub<Output=Self> {}
+impl<T: Sized + Clone + Magnitude + Debug + Sub<Output=T>> LinxalScalar for T {}
+
+/// Scalars that are also (real) floats.
+pub trait LinxalFloat: LinxalScalar + Float {}
+impl<T: LinxalScalar + Float> LinxalFloat for T {}
