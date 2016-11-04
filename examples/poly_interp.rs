@@ -9,9 +9,9 @@ extern crate ndarray;
 extern crate rand;
 
 use rand::thread_rng;
-use rand::distributions::{Normal, Range, Sample, IndependentSample};
+use rand::distributions::{Range, IndependentSample};
 use linxal::solve_linear::SolveLinear;
-use ndarray::{Array, arr1, Ix};
+use ndarray::{Array, Ix};
 
 /// Evalutate a polynomial f with coefficients `coefs` at `x`.
 ///
@@ -35,9 +35,9 @@ fn vandermonde_row(x: f32, n: usize) -> Array<f32, Ix> {
 
 fn main() {
     let mut rng = thread_rng();
-    let mut coef_gen = Range::new(-1.0, 1.0);
+    let coef_gen = Range::new(-1.0, 1.0);
 
-    let n = 10;
+    let n = 6;
     let coefs = Array::from_iter((0..n+1).map(|_| coef_gen.ind_sample(&mut rng)));
 
     let samples = Array::linspace(-1.0, 1.0, n+1);
@@ -54,7 +54,7 @@ fn main() {
         b[i] = eval_poly(*x, coefs.as_slice().unwrap());
     }
 
-    // Use least squares to fit the matrix.
+    // Solve the linear equations defined by the matrices.
     let fitted_coefs = SolveLinear::compute(&a, &b);
     assert!(fitted_coefs.is_ok());
 
