@@ -4,14 +4,14 @@ extern crate ndarray;
 extern crate linxal;
 extern crate lapack;
 
-use ndarray::{Array, Ix, Ix2, Axis};
+use ndarray::{Array, Ix1, Ix2, Axis};
 use linxal::solve_linear::{SolveLinear};
 use linxal::types::{Magnitude};
 
 #[test]
 pub fn solve_linear_vector() {
     let a: Array<f32, Ix2> = Array::from_shape_vec((2, 2), vec![1.0, 2.0, 3.0, 4.0]).unwrap();
-    let b: Array<f32, Ix> = Array::from_vec(vec![3.0, 7.0]);
+    let b: Array<f32, Ix1> = Array::from_vec(vec![3.0, 7.0]);
 
     let x = SolveLinear::compute_into(a, b);
 

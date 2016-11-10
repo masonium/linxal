@@ -1,4 +1,5 @@
 use ndarray::prelude::*;
+use ndarray::{Ix1, Ix2};
 
 /// Errors from an eigenvalue problem.
 #[derive(Debug)]
@@ -15,7 +16,7 @@ pub enum EigenError {
 /// eigenvectors of the solution. For symmetric problems, the
 /// eigenvectors are placed in `right_eigenvectors`.
 pub struct Solution<IV, EV> {
-    pub values: Array<EV, Ix>,
-    pub left_vectors: Option<Array<IV, (Ix, Ix)>>,
-    pub right_vectors: Option<Array<IV, (Ix, Ix)>>,
+    pub values: Array<EV, Ix1>,
+    pub left_vectors: Option<Array<IV, Ix2>>,
+    pub right_vectors: Option<Array<IV, Ix2>>,
 }

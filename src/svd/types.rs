@@ -1,6 +1,7 @@
 use ndarray::prelude::*;
 use num_traits::{Float, ToPrimitive};
 use std::fmt::Display;
+use ndarray::{Ix1, Ix2};
 
 /// Trait for singular values
 ///
@@ -21,15 +22,15 @@ pub struct SVDSolution<IV: Sized, SV: Sized> {
     ///
     /// Singular values, which are guaranteed to be non-negative
     /// reals, are returned in descending order.
-    pub values: Array<SV, Ix>,
+    pub values: Array<SV, Ix1>,
 
     /// The matrix `U` of left singular vectors.
-    pub left_vectors: Option<Array<IV, (Ix, Ix)>>,
+    pub left_vectors: Option<Array<IV, Ix2>>,
 
     /// The matrix V^t of singular vectors.
     ///
     /// The transpose of V is stored, not V itself.
-    pub right_vectors: Option<Array<IV, (Ix, Ix)>>,
+    pub right_vectors: Option<Array<IV, Ix2>>,
 }
 
 /// An error resulting from a `SVD::compute*` method.
