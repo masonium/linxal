@@ -39,7 +39,7 @@ pub fn slice_and_layout_mut<D, S: DataMut<Elem = D>>(mat: &mut ArrayBase<S, Ix2>
             slice::from_raw_parts_mut(mat.as_mut_ptr(), nelem)
         };
         Some((s, Layout::RowMajor, m))
-    } else if strides.0 == 0 {
+    } else if strides.0 == 1 {
         let n = strides.1;
         let s = unsafe {
             let nelem: usize = (dim.1 - 1) * n as usize + dim.0;
