@@ -1,3 +1,10 @@
+0.2.1:
+ - Fixed bug which caused column-major layout matrices to be rejected
+   from most major computations
+ - Add `poly_interp` example to demonstrate `SolveLinear` trait.
+ - Add `LinxalScalar` trait as sugar for features common to all scalar
+   inputs for matrix operations.
+
 0.2.0:
  - Incrememnt minor version due to incompatible API changes.
  
