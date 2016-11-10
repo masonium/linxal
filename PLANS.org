@@ -1,9 +1,12 @@
 * Plans
 
 ** Functionality
-- [ ] Solve linear equations
-- [ ] Solve linear least squares
-- [ ] factoriazations (QR, LU)
+- [X] Solve linear equations
+- [X] Solve linear least squares
+- [ ] factorizations
+  - [ ] QR
+  - [ ] LU
+  - [ ] Cholesky
 
 ** Interface
 - [ ] Make matrices implement traits, not floats
