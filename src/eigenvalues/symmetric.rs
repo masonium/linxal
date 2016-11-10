@@ -15,13 +15,13 @@ pub trait SymEigen: Sized {
     fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
                       uplo: Symmetric,
                       with_vectors: bool)
-                      -> Result<Array<Self::SingularValue, Ix>, EigenError>
+                      -> Result<Array<Self::SingularValue, Ix1>, EigenError>
         where D: DataMut<Elem = Self>;
 
     /// Return the real eigenvalues of a symmetric matrix.
     fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
                        uplo: Symmetric)
-                       -> Result<Array<Self::SingularValue, Ix>, EigenError>
+                       -> Result<Array<Self::SingularValue, Ix1>, EigenError>
         where D: DataMut<Elem = Self> + DataOwned<Elem = Self> {
         Self::compute_mut(&mut mat, uplo, false)
     }
@@ -46,7 +46,7 @@ macro_rules! impl_sym_eigen {
             type Solution = Solution<Self, Self::SingularValue>;
 
             fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
-                Result<Array<Self::SingularValue, Ix>, EigenError>
+                Result<Array<Self::SingularValue, Ix1>, EigenError>
                 where D: DataMut<Elem=Self>
             {
                 let dim = mat.dim();

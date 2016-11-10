@@ -11,7 +11,7 @@ extern crate rand;
 use rand::thread_rng;
 use rand::distributions::{Range, IndependentSample};
 use linxal::solve_linear::SolveLinear;
-use ndarray::{Array, Ix};
+use ndarray::{Array, Ix1};
 
 /// Evalutate a polynomial f with coefficients `coefs` at `x`.
 ///
@@ -22,7 +22,7 @@ fn eval_poly(x: f32, coefs: &[f32]) -> f32 {
 }
 
 /// Returns the row (1.0, x, x^2, ..., x^n)
-fn vandermonde_row(x: f32, n: usize) -> Array<f32, Ix> {
+fn vandermonde_row(x: f32, n: usize) -> Array<f32, Ix1> {
     let mut v: Vec<f32> = Vec::with_capacity(n + 1);
     let mut r = 1.0;
     v.push(1.0);

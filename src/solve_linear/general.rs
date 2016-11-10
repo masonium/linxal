@@ -16,8 +16,8 @@ pub trait SolveLinear: Sized + Clone {
 
     /// Solve the linear system A * x = b for square matrix `a` and column vector `b`.
     fn compute_into<D1, D2>(a: ArrayBase<D1, Ix2>,
-                            b: ArrayBase<D2, Ix>)
-                            -> Result<ArrayBase<D2, Ix>, SolveError>
+                            b: ArrayBase<D2, Ix1>)
+                            -> Result<ArrayBase<D2, Ix1>, SolveError>
         where D1: DataMut<Elem = Self> + DataOwned<Elem = Self>,
               D2: DataMut<Elem = Self> + DataOwned<Elem = Self>
     {
@@ -51,8 +51,8 @@ pub trait SolveLinear: Sized + Clone {
 
     /// Solve the linear system A * x = b for square matrix `a` and column vector `b`.
     fn compute<D1, D2>(a: &ArrayBase<D1, Ix2>,
-                       b: &ArrayBase<D2, Ix>)
-                       -> Result<Array<Self, Ix>, SolveError>
+                       b: &ArrayBase<D2, Ix1>)
+                       -> Result<Array<Self, Ix1>, SolveError>
         where D1: Data<Elem = Self>,
               D2: Data<Elem = Self>
     {
@@ -93,7 +93,7 @@ macro_rules! impl_solve_linear {
                         None => return Err(SolveError::InconsistentLayout)
                     };
 
-                    let mut perm: Array<i32, Ix> = Array::default(dim.0);
+                    let mut perm: Array<i32, Ix1> = Array::default(dim.0);
 
                     $driver(layout, dim.0 as i32, b_dim.1 as i32,
                            slice, lda as i32,

@@ -142,8 +142,8 @@ pub trait LeastSquares: Sized + Clone {
     ///
     /// This method will never return `LeastSquaresError::Degenerate`.
     fn compute<D1, D2>(a: &ArrayBase<D1, Ix2>,
-                       b: &ArrayBase<D2, Ix>)
-                       -> Result<LeastSquaresSolution<Self, Ix>, LeastSquaresError>
+                       b: &ArrayBase<D2, Ix1>)
+                       -> Result<LeastSquaresSolution<Self, Ix1>, LeastSquaresError>
         where D1: Data<Elem = Self>,
               D2: Data<Elem = Self>
     {
@@ -256,7 +256,7 @@ macro_rules! impl_least_squares {
                     None => return Err(LeastSquaresError::BadLayout)
                 };
 
-                let mut svs: Array<$sv_type, Ix> = Array::default(cmp::min(a_dim.0, a_dim.1));
+                let mut svs: Array<$sv_type, Ix1> = Array::default(cmp::min(a_dim.0, a_dim.1));
                 let mut rank: i32 = 0;
 
 // compute result
