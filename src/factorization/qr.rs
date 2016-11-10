@@ -16,17 +16,6 @@ pub enum QRError {
     IllegalParameter(i32),
 }
 
-/// Enum for muliplication by Q.
-#[repr(u8)]
-#[derive(Debug, Clone)]
-pub enum QRMultiply {
-    /// Compute Q * A for the input matrix A
-    Left = b'L',
-
-    /// Compute A * Q for the input matrix A
-    Right = b'R',
-}
-
 /// Representation of the components Q, R of the factorization of
 /// matrix A.
 #[derive(Debug)]
@@ -62,23 +51,12 @@ impl<T: QR> QRFactors<T> {
         })
     }
 
+    /// Given a matrix, compute the QR decomposition of the matrix,
+    /// returned as a `QRFactors` object.
     pub fn compute<D1: Data<Elem=T>>(mat: &ArrayBase<D1, Ix2>)
                                      -> Result<QRFactors<T>, QRError> {
         QR::compute(mat)
     }
-
-
-    // /// Return `A * Q`, for the `Q` stored internally.
-    // pub fn left_multiply_by_q<D1: Data<Elem=T>>(&self, a: &ArrayBase<D1, Ix2>)
-    //                                             -> Result<Array<T, Ix2>, QRError> {
-    //     QR::multiply_by_q(&self.mat, &self.tau, a, QRMultiply::Left)
-    // }
-
-    // /// Return `A * Q`, for the `Q` stored internally.
-    // pub fn right_multiply_by_q<D1: Data<Elem=T>>(&self, a: &ArrayBase<D1, Ix2>)
-    //                                              -> Result<Array<T, Ix2>, QRError> {
-    //     QR::multiply_by_q(&self.mat, &self.tau, a, QRMultiply::Right)
-    // }
 
     /// Return the first `k` columns of the matrix Q of the QR
     /// factorization.
@@ -145,18 +123,6 @@ pub trait QR: Sized + Clone + Magnitude + Debug {
         Self::compute_into(a.to_owned())
     }
 
-    /// multiply an input matrix by `Q`.
-    ///
-    /// Not intended to be used by end-users.  `side` indicates
-    /// whether to pre-or-post-multiply the input by `Q`.
-    // fn multiply_by_q<D1, D2>(mat: &ArrayBase<D1, Ix2>,
-    //                          tau: &[Self],
-    //                          a: &ArrayBase<D2, Ix2>,
-    //                          mult: QRMultiply)
-    //                   -> Result<Array<Self, Ix2>, QRError>
-    //     where D1: Data<Elem = Self>,
-    //           D2: Data<Elem = Self>;
-
     /// Compute Q from raw parts.
     ///
     /// Not intended to be used by end-users.
@@ -206,64 +172,6 @@ impl QR for f32 {
             unreachable!();
         }
     }
-
-    // fn multiply_by_q<D1, D2>(a: &ArrayBase<D1, Ix2>,
-    //                          tau: &[Self],
-    //                          c: &ArrayBase<D2, Ix2>,
-    //                          mult: QRMultiply)
-    //                   -> Result<Array<Self, Ix2>, QRError>
-    //     where D1: Data<Elem = Self>,
-    //           D2: Data<Elem = Self>
-    // {
-    //     let (m, n) = a.dim();
-    //     let (cm, cn) = c.dim();
-
-    //     let result_dim = match mult {
-    //         QRMultiply::Left => cm == n
-    //         QRMultiply::Right => {
-    //             if cn == m {
-    //                 (cm, n)
-
-    //     };
-
-    //     if !matching_dim {
-    //         return Err(QRError::InconsistentDimensions);
-    //     }
-
-    //     let (slice, layout, lda) = match slice_and_layout(&a) {
-    //         None => return Err(QRError::BadLayout),
-    //         Some(fwd) => fwd,
-    //     };
-
-    //     let mut c_result = matrix_with_layout(c.dim(), layout);
-
-    //     let info = {
-    //         let (c_slice, ldc) = match slice_and_layout_mut(&mut c_result) {
-    //             None => unreachable!(),
-    //             Some((slice, _, ldc)) => (slice, ldc),
-    //         };
-
-    //         sormqr(layout,
-    //                mult as u8,
-    //                b'N',
-    //                cm as i32,
-    //                cn as i32,
-    //                tau.len() as i32,
-    //                slice,
-    //                lda as i32,
-    //                tau,
-    //                c_slice,
-    //                ldc as i32)
-    //     };
-
-    //     if info == 0 {
-    //         Ok(c_result)
-    //     } else if info < 0 {
-    //         Err(QRError::IllegalParameter(-info))
-    //     } else {
-    //         unreachable!();
-    //     }
-    // }
 
     fn compute_q<D1>(mat: &ArrayBase<D1, Ix2>,
                      tau: &[Self],
