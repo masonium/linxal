@@ -1,6 +1,7 @@
 use impl_prelude::*;
 use lapack::c::{sgeqrf, sorgqr, dgeqrf, dorgqr, cgeqrf, cungqr, zgeqrf, zungqr};
 use std::fmt::Debug;
+use ndarray as nd;
 use num_traits::Zero;
 use types::Magnitude;
 
@@ -84,8 +85,8 @@ impl<T: QR> QRFactors<T> {
     /// `self.q()` is large enough so that `&self.q() * &self.r()`
     /// will faithfully reproduce the original matrix `A`.
     #[inline]
-    pub fn q(&self) -> Result<Array<T, Ix2>, QRError> {
-        self.qk(None)
+    pub fn q(&self) -> Array<T, Ix2> {
+        self.qk(None).expect("Invalid implementation of Self::qk. Please report.")
     }
 
 
@@ -108,13 +109,18 @@ impl<T: QR> QRFactors<T> {
     /// `self.r()` is large enough so that `&self.q() * &self.r()`
     /// will faithfully reproduce the original matrix `A`.
     #[inline]
-    pub fn r(&self) -> Result<Array<T, Ix2>, QRError> {
-        self.rk(None)
+    pub fn r(&self) -> Array<T, Ix2> {
+        self.rk(None).expect("Invalid implementation of Self::rk. Please report.")
+    }
+
+    /// Reconstruct the original matrix `A` from the factorization.
+    pub fn reconstruct(&self) -> Array<T, Ix2> {
+        self.q().dot(&self.r())
     }
 }
 
 /// Trait defined on scalars to support QR-factorization.
-pub trait QR: Sized + Clone + Magnitude + Debug {
+pub trait QR: Sized + Clone + Magnitude + Debug + nd::LinalgScalar {
     /// Return a `QRFactors` structure, containing the QR
     /// factorization of the input matrix `A`.
     ///

@@ -12,20 +12,23 @@ use linxal::prelude::{Magnitude};
 /// Check that all the properties of the qr factorization are
 /// reasonable.
 fn check_qr<D1: Data<Elem=f32>>(m: &ArrayBase<D1, Ix2>, qr: &QRFactors<f32>) {
-    let q: Array<f32, Ix2> = qr.q().unwrap();
-    let r: Array<f32, Ix2> = qr.r().unwrap();
+    let q: Array<f32, Ix2> = qr.q();
+    let r: Array<f32, Ix2> = qr.r();
 
     assert_eq!(qr.rows(), q.rows());
     assert_eq!(qr.cols(), r.cols());
 
-    let a1 = q.dot(&r);
+    // The reconstruction should match the original.
+    let a1 = qr.reconstruct();
+    assert_eq_within_tol!(a1, m, 0.001);
 
     // let mut a1 = Array::zeros((q.dim().0, r.dim().1));
     // general_mat_mul(1.0, &q, &r, 0.0, &mut a1);
 
     // Q * R needs to match QR.
+    let a2 = q.dot(&r);
     println!("{:?}\n{:?}\n", q, r);
-    assert_eq_within_tol!(a1, m, 0.001);
+    assert_eq_within_tol!(a2, m, 0.001);
 
     // partial results for Q yield the same value as Q.
     for i in 1 .. q.dim().1 + 1 {
