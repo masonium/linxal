@@ -22,12 +22,6 @@ pub enum QRError {
 pub struct QRFactors<T: QR> {
     mat: Array<T, Ix2>,
     tau: Vec<T>,
-
-    /// Number of rows in the original matrix
-    pub m: usize,
-
-    /// Number of columns in the original matrix
-    pub n: usize,
 }
 
 impl<T: QR> QRFactors<T> {
@@ -37,7 +31,6 @@ impl<T: QR> QRFactors<T> {
         where Matrix: Into<Array<T, Ix2>>
     {
         let mut ma = mat.into();
-        let (m, n) = ma.dim();
 
         if slice_and_layout_mut(&mut ma).is_none() {
             return Err(QRError::BadLayout);
@@ -46,8 +39,6 @@ impl<T: QR> QRFactors<T> {
         Ok(QRFactors {
             mat: ma,
             tau: tau,
-            m: m,
-            n: n,
         })
     }
 
@@ -56,6 +47,20 @@ impl<T: QR> QRFactors<T> {
     pub fn compute<D1: Data<Elem=T>>(mat: &ArrayBase<D1, Ix2>)
                                      -> Result<QRFactors<T>, QRError> {
         QR::compute(mat)
+    }
+
+    /// Return the number of rows in the original matrix
+    pub fn rows(&self) -> usize {
+        self.mat.rows()
+    }
+
+    /// Return the number of columns in the original matrix
+    pub fn cols(&self) -> usize {
+        self.mat.cols()
+    }
+
+    fn p(&self) -> usize {
+        cmp::min(self.rows(), self.cols())
     }
 
     /// Return the first `k` columns of the matrix Q of the QR
@@ -68,7 +73,7 @@ impl<T: QR> QRFactors<T> {
     /// faithfully recreate the original matrix A.
     pub fn qk<K: Into<Option<usize>>>(&self, k: K) -> Result<Array<T, Ix2>, QRError> {
         let kr = k.into();
-        QR::compute_q(&self.mat, &self.tau, kr.unwrap_or(cmp::min(self.m, self.n)))
+        QR::compute_q(&self.mat, &self.tau, kr.unwrap_or(self.p()))
     }
 
     /// Return the `m` by `min(m, n)` matrix `Q`.
@@ -90,7 +95,7 @@ impl<T: QR> QRFactors<T> {
     /// faithfully recreate the original matrix A.
     pub fn rk<K: Into<Option<usize>>>(&self, k: K) -> Result<Array<T, Ix2>, QRError> {
         let kr = k.into();
-        let p = kr.unwrap_or(cmp::min(self.m, self.n));
+        let p = kr.unwrap_or(self.p());
         QR::compute_r(&self.mat, p)
     }
 
