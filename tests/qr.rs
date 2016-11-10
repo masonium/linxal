@@ -15,6 +15,9 @@ fn check_qr<D1: Data<Elem=f32>>(m: &ArrayBase<D1, Ix2>, qr: &QRFactors<f32>) {
     let q: Array<f32, Ix2> = qr.q().unwrap();
     let r: Array<f32, Ix2> = qr.r().unwrap();
 
+    assert_eq!(qr.rows(), q.rows());
+    assert_eq!(qr.cols(), r.cols());
+
     let a1 = q.dot(&r);
 
     // let mut a1 = Array::zeros((q.dim().0, r.dim().1));
@@ -69,4 +72,20 @@ fn qr_basic_wide() {
     assert!(qr.is_ok());
 
     check_qr(&m, &qr.unwrap());
+}
+
+
+#[test]
+fn qr_basic_linspace() {
+    for m in 1..6 {
+        for n in 1..6 {
+            let mat = Array::linspace(1.0, (m*n) as f32, m*n).into_shape((m, n)).unwrap();
+
+            let qr = QRFactors::compute(&mat);
+            assert!(qr.is_ok());
+
+            check_qr(&mat, &qr.unwrap());
+        }
+    }
+
 }
