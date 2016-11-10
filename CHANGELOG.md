@@ -1,3 +1,7 @@
+0.2.2:
+ - Changed all relevant `Ix` references to `Ix` alias (@bluss)
+ - Removed old source file
+
 0.2.1:
  - Fixed bug which caused column-major layout matrices to be rejected
    from most major computations
