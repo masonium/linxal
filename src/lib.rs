@@ -69,6 +69,7 @@ extern crate lapack;
 extern crate num_traits;
 
 pub mod util;
+pub mod permute;
 
 pub mod eigenvalues;
 pub mod svd;
