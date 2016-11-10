@@ -1,6 +1,7 @@
 use impl_prelude::*;
-use lapack::c::{sgeqrf, sorgqr};
+use lapack::c::{sgeqrf, sorgqr, dgeqrf, dorgqr, cgeqrf, cungqr, zgeqrf, zungqr};
 use std::fmt::Debug;
+use num_traits::Zero;
 use types::Magnitude;
 
 /// Error for QR-based computations.
@@ -144,97 +145,109 @@ pub trait QR: Sized + Clone + Magnitude + Debug {
         where D1: Data<Elem = Self>;
 }
 
-impl QR for f32 {
-    fn compute_into(mut a: Array<Self, Ix2>) -> Result<QRFactors<Self>, QRError> {
-        let dim = a.dim();
+macro_rules! impl_qr {
+    ($qr_type:ty, $qr_func:ident, $qr_to_q:ident) => (
 
-        let (info, tau) = {
-            let (mut slice, layout, lda) = match slice_and_layout_mut(&mut a) {
-                None => return Err(QRError::BadLayout),
-                Some(x) => x,
-            };
+        impl QR for $qr_type {
+            fn compute_into(mut a: Array<Self, Ix2>) -> Result<QRFactors<Self>, QRError> {
+                let dim = a.dim();
 
-            let mut tau = Vec::new();
-            tau.resize(cmp::min(dim.0, dim.1), 0.0);
+                let (info, tau) = {
+                    let (mut slice, layout, lda) = match slice_and_layout_mut(&mut a) {
+                        None => return Err(QRError::BadLayout),
+                        Some(x) => x,
+                    };
 
-            // workspace query
-            (sgeqrf(layout,
-                    dim.0 as i32,
-                    dim.1 as i32,
-                    &mut slice,
-                    lda as i32,
-                    &mut tau),
-             tau)
-        };
+                    let mut tau = Vec::new();
+                    tau.resize(cmp::min(dim.0, dim.1), <$qr_type as Zero>::zero());
 
-        println!("{:?}\n {:?}\n", a, tau);
+                    // workspace query
+                    ($qr_func(layout,
+                            dim.0 as i32,
+                            dim.1 as i32,
+                            &mut slice,
+                            lda as i32,
+                            &mut tau),
+                     tau)
+                };
 
-        if info == 0 {
-            QRFactors::from_raw(a, tau)
-        } else if info < 0 {
-            Err(QRError::IllegalParameter(-info))
-        } else {
-            unreachable!();
+                println!("{:?}\n {:?}\n", a, tau);
+
+                if info == 0 {
+                    QRFactors::from_raw(a, tau)
+                } else if info < 0 {
+                    Err(QRError::IllegalParameter(-info))
+                } else {
+                    unreachable!();
+                }
+            }
+
+            fn compute_q<D1>(mat: &ArrayBase<D1, Ix2>,
+                             tau: &[Self],
+                             k: usize)
+                             -> Result<Array<Self, Ix2>, QRError>
+                where D1: Data<Elem = Self>
+            {
+
+                let (m, n) = mat.dim();
+                if k > m {
+                    return Err(QRError::InconsistentDimensions);
+                }
+
+                // Initialize q with the
+                let mut q = mat.slice(s![.., ..k as isize]).to_owned();
+
+                let info = {
+                    let (slice, layout, ldq) = match slice_and_layout_mut(&mut q) {
+                        None => unreachable!(),
+                        Some(fwd) => fwd,
+                    };
+
+                    $qr_to_q(layout,
+                           m as i32,
+                           k as i32,
+                           cmp::min(k, n) as i32,
+                           slice,
+                           ldq as i32,
+                           tau)
+                };
+                if info == 0 {
+                    Ok(q)
+                } else {
+                    Err(QRError::IllegalParameter(-info))
+                }
+            }
+
+            fn compute_r<D1>(mat: &ArrayBase<D1, Ix2>, k: usize) -> Result<Array<Self, Ix2>, QRError>
+                where D1: Data<Elem = Self>
+            {
+                let (m, n) = mat.dim();
+
+                let nn = cmp::min(m, n);
+                if k > nn {
+                    return Err(QRError::InconsistentDimensions);
+                }
+
+                let mut r = Array::zeros((k as usize, n));
+
+                // Copy the upper triangular/trapezoidal part of the matrix to
+                // R.
+                r.slice_mut(s![..k as isize, ..]).assign(&mat.slice(s![..k as isize, ..]));
+
+                let zero = <$qr_type as Zero>::zero();
+
+                // Replace zeros below the diagonal.
+                for (i, mut row) in r.outer_iter_mut().enumerate().take(nn as usize) {
+                    row.slice_mut(s![..i as isize]).assign_scalar(&zero);
+                }
+
+                Ok(r)
+            }
         }
-    }
-
-    fn compute_q<D1>(mat: &ArrayBase<D1, Ix2>,
-                     tau: &[Self],
-                     k: usize)
-                     -> Result<Array<Self, Ix2>, QRError>
-        where D1: Data<Elem = Self>
-    {
-
-        let (m, n) = mat.dim();
-        if k > m {
-            return Err(QRError::InconsistentDimensions);
-        }
-
-        // Initialize q with the
-        let mut q = mat.slice(s![.., ..k as isize]).to_owned();
-
-        let info = {
-            let (slice, layout, ldq) = match slice_and_layout_mut(&mut q) {
-                None => unreachable!(),
-                Some(fwd) => fwd,
-            };
-
-            sorgqr(layout,
-                   m as i32,
-                   k as i32,
-                   cmp::min(k, n) as i32,
-                   slice,
-                   ldq as i32,
-                   tau)
-        };
-        if info == 0 {
-            Ok(q)
-        } else {
-            Err(QRError::IllegalParameter(-info))
-        }
-    }
-
-    fn compute_r<D1>(mat: &ArrayBase<D1, Ix2>, k: usize) -> Result<Array<Self, Ix2>, QRError>
-        where D1: Data<Elem = Self>
-    {
-        let (m, n) = mat.dim();
-
-        let nn = cmp::min(m, n);
-        if k > nn {
-            return Err(QRError::InconsistentDimensions);
-        }
-
-        let mut r = Array::zeros((k as usize, n));
-
-        // Copy the upper triangular/trapezoidal part of the matrix to
-        // R.
-        r.slice_mut(s![..k as isize, ..]).assign(&mat.slice(s![..k as isize, ..]));
-
-        // Replace zeros below the diagonal.
-        for (i, mut row) in r.outer_iter_mut().enumerate().take(nn as usize) {
-            row.slice_mut(s![..i as isize]).assign_scalar(&0.0);
-        }
-
-        Ok(r)
-    }
+    )
 }
+
+impl_qr!(f32, sgeqrf, sorgqr);
+impl_qr!(f64, dgeqrf, dorgqr);
+impl_qr!(c32, cgeqrf, cungqr);
+impl_qr!(c64, zgeqrf, zungqr);
