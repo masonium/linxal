@@ -16,7 +16,7 @@
 //! ```text
 //! [dependencies]
 //! ...
-//! linxal = "0.1"
+//! linxal = "0.2"
 //! ```
 //!
 //! In your `lib.rs` or `main.rs` file, use
@@ -61,6 +61,46 @@
 //!     assert_eq_within_tol!(true_evs, r.values, 0.01);
 //! }
 //! ```
+//!
+//! # Details
+//!
+//! ## Symmetric Algorithms
+//!
+//! Some traits and algorithms are designed only to work on symmetric
+//! or Hermititan matrices. Throught the library, 'Sym' or 'Symmetric'
+//! refers simply to symmetric matrices for real-valued matrices and
+//! Hermititan matrices for complex-valued matrices.
+//!
+//! Symmetric algorithms typically take a (`Symmetric`) enum
+//! argument. `Symmetric::Upper` indicates that the values of the
+//! matrix are stored in the upper-triangular portion of the
+//! matrix. `Symmetric::Lower` corresponds to the lower portion. For
+//! algorithms that take this argument, only that portion is read. So,
+//! for example:
+//!
+//! ```rust,ignore
+//! #[macro_use]
+//! extern crate linxal;
+//! extern crate ndarray;
+//!
+//! use linxal::eigenvalues::{SymEigen};
+//! use ndarray::{arr1, arr2};
+//!
+//! fn test_eig_access() {
+//!     // `upper_only` is not symmetric, but the portion below the diagonal is  never read.
+//!     let upper_only = arr2(&[[1.0f32, 2.0], [-3.0, 1.0]]);
+//!
+//!     // Since only the upper triangle is read by `SymEigen`, it is equivalent to `full`.
+//!     let full = arr2(&[[1.0f32, 2.0], [2.0, 1.0]]);
+//!
+//!     let upper_only_ev = SymEigen::compute_into(upper_only, Symmetric::Upper).unwrap();
+//!     let full_ev = SymEigen::compute_into(full, Symmetric::Upper).unwrap();
+//!
+//!     assert_eq_within_tol!(upper_only_ev, full_ev, 1e-5);
+//! }
+//! ```
+//!
+
 #![macro_use]
 
 #[macro_use]
