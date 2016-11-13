@@ -4,7 +4,7 @@ use impl_prelude::*;
 
 /// Implements `compute_*` methods to solve systems of linear
 /// equations A*X = B, where A is symmetric (for real-valued matrices)
-/// or hermitian (for complex-valued matrices.
+/// or hermitian (for complex-valued matrices).
 pub trait SymmetricSolveLinear: Sized + Clone {
     /// Solve the linear system A * x = B for symmetric/hermitian
     /// square matrix `a` and rectangular matrix `b`.

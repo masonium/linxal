@@ -3,8 +3,15 @@ use lapack::c::{sgeev, dgeev, cgeev, zgeev};
 use impl_prelude::*;
 use super::types::{EigenError, Solution};
 
+/// Scalar trait for computing eigenvalues.
+///
+/// In order to extract eigenvalues or eigenvectors from a matrix,
+/// that matrix with must have  entries implementing the `Eigen` trait.
 pub trait Eigen: Sized + Clone {
-    type Eigv;
+    /// The type of the eigenvalues.
+    type EigenValue;
+
+    /// The solution structure of the eigenvalue computation.
     type Solution;
 
     /// Return the eigenvalues and, optionally, the left and/or right
@@ -36,7 +43,7 @@ macro_rules! impl_eigen_real {
     ($impl_type:ident, $eigv_type:ident, $func:ident)  => (
         impl Eigen for $impl_type {
 
-            type Eigv = $eigv_type;
+            type EigenValue = $eigv_type;
             type Solution = Solution<$impl_type, $eigv_type>;
 
             fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
@@ -71,13 +78,13 @@ macro_rules! impl_eigen_real {
 
                 if info == 0 {
                     let vals: Vec<_> = values_real.iter().zip(values_imag.iter())
-                        .map(|(x, y)| Self::Eigv::new(*x, *y)).collect();
+                        .map(|(x, y)| Self::EigenValue::new(*x, *y)).collect();
                     Ok(Solution {
                         values: ArrayBase::from_vec(vals),
                         left_vectors: if compute_left { Some(vl) } else { None },
                         right_vectors: if compute_right { Some(vr) } else { None }})
                 } else if info < 0 {
-                    Err(EigenError::BadParameter(-info))
+                    Err(EigenError::IllegalParameter(-info))
                 } else {
                     Err(EigenError::Failed)
                 }
@@ -93,7 +100,7 @@ macro_rules! impl_eigen_complex {
     ($impl_type:ident, $func:ident)  => (
         impl Eigen for $impl_type {
 
-            type Eigv = $impl_type;
+            type EigenValue = $impl_type;
             type Solution = Solution<$impl_type, $impl_type>;
 
             fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
@@ -133,7 +140,7 @@ macro_rules! impl_eigen_complex {
                         left_vectors: if compute_left { Some(vl) } else { None },
                         right_vectors: if compute_right { Some(vr) } else { None }})
                 } else if info < 0 {
-                    Err(EigenError::BadParameter(-info))
+                    Err(EigenError::IllegalParameter(-info))
                 } else {
                     Err(EigenError::Failed)
                 }

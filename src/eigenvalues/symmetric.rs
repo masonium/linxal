@@ -8,8 +8,14 @@ use super::types::{Solution, EigenError};
 use impl_prelude::*;
 
 /// Scalar trait for computing eigenvalues of a symmetric matrix.
+///
+/// In order to extract eigenvalues or eigenvectors from a matrix,
+/// that matrix with must have  entries implementing the `Eigen` trait.
 pub trait SymEigen: Sized {
-    type SingularValue;
+    /// Scalar type of the resulting eigenvalues.
+    type Eigenvalue;
+
+    /// Solution structure from the eigenvalue computation.
     type Solution;
 
     /// Return the real eigenvalues of a symmetric matrix.
@@ -19,13 +25,13 @@ pub trait SymEigen: Sized {
     fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
                       uplo: Symmetric,
                       with_vectors: bool)
-                      -> Result<Array<Self::SingularValue, Ix1>, EigenError>
+                      -> Result<Array<Self::Eigenvalue, Ix1>, EigenError>
         where D: DataMut<Elem = Self>;
 
     /// Return the real eigenvalues of a symmetric matrix.
     fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
                        uplo: Symmetric)
-                       -> Result<Array<Self::SingularValue, Ix1>, EigenError>
+                       -> Result<Array<Self::Eigenvalue, Ix1>, EigenError>
         where D: DataMut<Elem = Self> + DataOwned<Elem = Self> {
         Self::compute_mut(&mut mat, uplo, false)
     }
@@ -46,11 +52,11 @@ pub trait SymEigen: Sized {
 macro_rules! impl_sym_eigen {
     ($impl_type:ident, $eigen_type:ident, $func:ident) => (
         impl SymEigen for $impl_type {
-            type SingularValue = $eigen_type;
-            type Solution = Solution<Self, Self::SingularValue>;
+            type Eigenvalue = $eigen_type;
+            type Solution = Solution<Self, Self::Eigenvalue>;
 
             fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
-                Result<Array<Self::SingularValue, Ix1>, EigenError>
+                Result<Array<Self::Eigenvalue, Ix1>, EigenError>
                 where D: DataMut<Elem=Self>
             {
                 let dim = mat.dim();
@@ -74,7 +80,7 @@ macro_rules! impl_sym_eigen {
                 if info  == 0 {
                     Ok(values)
                 } else if info < 0 {
-                    Err(EigenError::BadParameter(-info))
+                    Err(EigenError::IllegalParameter(-info))
                 } else {
                     Err(EigenError::Failed)
                 }

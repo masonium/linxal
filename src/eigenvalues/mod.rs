@@ -6,6 +6,8 @@
 //! $$A \cdot x = \lambda \cdot x$$
 //!
 //! for a square matrix \\(A\\).
+#![deny(missing_docs)]
+
 
 pub mod general;
 pub mod symmetric;
