@@ -14,7 +14,7 @@ use ndarray as nd;
 use num_traits::Zero;
 
 /// Error for QR-based computations.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QRError {
     /// The layout of the matrix is not compatible
     BadLayout,
