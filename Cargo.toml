@@ -11,7 +11,7 @@ readme = "README.md"
 license = "MIT"
 keywords = ["linear-algebra", "ndarray", "matrix"]
 
-include = ["**/*.rs", "LICENSE", "README.md", "CHANGELOG.md", "Cargo.toml"]
+include = ["**/*.rs", "LICENSE", "README.md", "CHANGELOG.md", "discrepancies.md", "Cargo.toml"]
 
 [features]
 default = ["openblas"]

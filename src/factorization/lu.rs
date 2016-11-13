@@ -18,6 +18,13 @@
 //!
 //! The LU factorization can be used to solve Ax=b equations or
 //! compute the inverse of `A`.
+//!
+//! # Remarks
+//!
+//! The various LAPACKE backends differ on how degenerate matrices are
+//! treated. OpenBLAS will still return success, but the resulting
+//! factorization doesn't work for solving least-squares or doing
+//! matrix inversions. Netlib seems to fail entirely.
 
 use impl_prelude::*;
 use permute::{MatrixPermutation, Permutes};
