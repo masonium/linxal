@@ -8,29 +8,34 @@
 //! - `L` is lower triangular (if m <= n) or lower trapezoidal (if m
 //! >= n), with unit diagonal.
 //!
-//! - `U` is upper triangular if (m >= n) or upper trapezodial (if m <
+//! - `U` is upper triangular (if m >= n) or upper trapezodial (if m <
 //! n)
+//!
+//! Currently, the LU-factorization will fail if the matrix is not of
+//! full row rank. In some sense, this is acceptable because most
+//! operation with LU factorizations are non-sensible with a singular
+//! matrix.
+//!
+//! The LU factorization can be used to solve Ax=b equations or
+//! compute the inverse of `A`.
 
 use impl_prelude::*;
-use permute::{MatrixPermutation, Permutable};
+use permute::{MatrixPermutation, Permutes};
 use ndarray as nd;
 use lapack::c::{sgetrf, dgetrf, cgetrf, zgetrf, sgetri, dgetri, cgetri, zgetri};
-use std::fmt::Debug;
-use num_traits::{Zero, One};
-use types::Magnitude;
 
 /// Error for LU-based computations.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LUError {
     /// The layout of the matrix is not compatible
     BadLayout,
 
-    // The matrix is not square, but the operation requires a square
-    // matrix.
+    /// The matrix is not square, but the operation requires a square
+    /// matrix.
     NotSquare,
 
-    // The matrix is not invertible.
-    NotInvertible,
+    /// The matrix is not invertible.
+    Singular,
 
     /// The dimensions of the raw qr and tau don't match
     InconsistentDimensions,
@@ -164,7 +169,9 @@ impl<T: LU> LUFactors<T> {
 }
 
 /// Trait defined on scalars to support LU-factorization.
-pub trait LU: Sized + Clone + Magnitude + Debug + Zero + One + nd::LinalgScalar + Permutable {
+///
+/// Any matrix composed of `LU` scalars can be split into `LUFactors`.
+pub trait LU: nd::LinalgScalar + Permutes {
     /// Return a `LUFactors` structure, containing the LU
     /// factorization of the input matrix `A`.
     ///

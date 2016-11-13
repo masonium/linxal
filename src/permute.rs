@@ -18,28 +18,31 @@ impl MatrixPermutation {
 
     /// Permute an input matrix `mat` by this permutation.
     pub fn permute_into<T, D1>(&self, mat: ArrayBase<D1, Ix2>) -> Option<ArrayBase<D1, Ix2>>
-        where T: Permutable,
+        where T: Permutes,
               D1: DataOwned<Elem=T> + DataMut<Elem=T> {
-        Permutable::permute_into(mat, &self.ipiv)
+        Permutes::permute_into(mat, &self.ipiv)
     }
 
     /// Permute a matrix `mat` by this permutation.
     pub fn permute<T, D1>(&self, mat: &ArrayBase<D1, Ix2>) -> Option<Array<T, Ix2>>
-        where T: Permutable, D1: Data<Elem=T> {
-        Permutable::permute(mat, &self.ipiv)
+        where T: Permutes, D1: Data<Elem=T> {
+        Permutes::permute(mat, &self.ipiv)
     }
 
     /// Return the native LAPACKE representation of the permutation.
+    ///
+    /// This will only be useful for interfacing with other LAPACKE
+    /// functions.
     pub fn ipiv(&self) -> &[i32] {
         &self.ipiv
     }
 }
 
-/// A `Permutable` is a scalar that one can apply a
+/// A `Permutes` is a scalar that one can apply a
 /// `MatrixPermutation` to.
 ///
 /// The methods of permuatble are not meant to be used by end-users.
-pub trait Permutable: Sized + Clone {
+pub trait Permutes: Sized + Clone {
     /// Permute a matrix by the pivot representation of a permutation.
     fn permute_into<D1>(mat: ArrayBase<D1, Ix2>, ipiv: &[i32]) -> Option<ArrayBase<D1, Ix2>>
         where D1: DataOwned<Elem=Self> + DataMut<Elem=Self>;
@@ -53,7 +56,7 @@ pub trait Permutable: Sized + Clone {
 
 macro_rules! impl_perm {
     ($perm_type:ty, $perm_func:ident) => (
-        impl Permutable for $perm_type {
+        impl Permutes for $perm_type {
             fn permute_into<D1>(mut mat: ArrayBase<D1, Ix2>, ipiv: &[i32]) -> Option<ArrayBase<D1, Ix2>>
                 where D1: DataOwned<Elem=Self> + DataMut<Elem=Self> {
 
@@ -70,7 +73,8 @@ macro_rules! impl_perm {
                         Some(fwd) => fwd
                     };
 
-                    $perm_func(layout, n as i32, slice, lda as i32, 1, ipiv.len() as i32, ipiv, 1)
+                    $perm_func(layout, n as i32, slice, lda as i32, 1, ipiv.len() as i32,
+                               ipiv, 1)
                 };
 
                 if info == 0 {
