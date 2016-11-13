@@ -1,9 +1,13 @@
 //! Compute eigenvalues and eigenvectors of symmetric matrices.
+//!
+//! Symmetric (or Hermitian, for complex) matrices are guaranteed to
+//! have real eigenvalues.
 
 use lapack::c::{ssyev, dsyev, cheev, zheev};
 use super::types::{Solution, EigenError};
 use impl_prelude::*;
 
+/// Scalar trait for computing eigenvalues of a symmetric matrix.
 pub trait SymEigen: Sized {
     type SingularValue;
     type Solution;

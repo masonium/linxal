@@ -1,9 +1,17 @@
+//! Compute the QR-factorization of a rectangular matrix.
+//!
+//! An (m x n) rectangular matrix `A` is factored into the produce `Q` * `R`, such that
+//!
+//! - The columns of `Q` are orthonormal, and the span of the first
+//! `k` columns of `Q` contains the subspaces spanned by the first `k`
+//! columns of `A`, for all 1 <= `k` <= n.
+//!
+//! - `R` is an upper triangular or upper-trapezoidal matrix.
+
 use impl_prelude::*;
 use lapack::c::{sgeqrf, sorgqr, dgeqrf, dorgqr, cgeqrf, cungqr, zgeqrf, zungqr};
-use std::fmt::Debug;
 use ndarray as nd;
 use num_traits::Zero;
-use types::Magnitude;
 
 /// Error for QR-based computations.
 #[derive(Debug, Clone)]
@@ -120,7 +128,7 @@ impl<T: QR> QRFactors<T> {
 }
 
 /// Trait defined on scalars to support QR-factorization.
-pub trait QR: Sized + Clone + Magnitude + Debug + nd::LinalgScalar {
+pub trait QR: nd::LinalgScalar {
     /// Return a `QRFactors` structure, containing the QR
     /// factorization of the input matrix `A`.
     ///
