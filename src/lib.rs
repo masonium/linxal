@@ -69,12 +69,14 @@ extern crate lapack;
 extern crate num_traits;
 
 pub mod util;
+pub mod permute;
 
 pub mod eigenvalues;
 pub mod svd;
 pub mod solve_linear;
 pub mod least_squares;
 pub mod types;
+pub mod factorization;
 
 #[macro_use]
 pub mod prelude;

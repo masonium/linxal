@@ -1,5 +1,5 @@
 use ndarray::prelude::*;
-use ndarray::{Ix2, DataMut};
+use ndarray::{Ix2, Data, DataMut};
 use lapack::c::Layout;
 use std::slice;
 
@@ -50,6 +50,45 @@ pub fn slice_and_layout_mut<D, S: DataMut<Elem = D>>(mat: &mut ArrayBase<S, Ix2>
         None
     }
 }
+
+/// Return the slice, layout, and leading dimension of the matrix.
+///
+/// For LAPACKE methods, the memory layout does not need to be
+/// contiguous. We only required that either rows or columns are
+/// contiguous.
+pub fn slice_and_layout<D, S: Data<Elem = D>>(mat: &ArrayBase<S, Ix2>)
+                                              -> Option<(&[S::Elem], Layout, Ixs)> {
+    let strides = {
+        let s = mat.strides();
+        (s[0], s[1])
+    };
+
+    if strides.0 < 0 || strides.1 < 0 {
+        return None;
+    }
+
+    let dim = mat.dim();
+
+    // One of the stides, must be 1
+    if strides.1 == 1 {
+        let m = strides.0;
+        let s = unsafe {
+            let nelem: usize = (dim.0 - 1) * m as usize + dim.1;
+            slice::from_raw_parts(mat.as_ptr(), nelem)
+        };
+        Some((s, Layout::RowMajor, m))
+    } else if strides.0 == 1 {
+        let n = strides.1;
+        let s = unsafe {
+            let nelem: usize = (dim.1 - 1) * n as usize + dim.0;
+            slice::from_raw_parts(mat.as_ptr(), nelem)
+        };
+        Some((s, Layout::ColumnMajor, n))
+    } else {
+        None
+    }
+}
+
 
 /// Return the slice, layout, and leading dimension of the matrix. If
 /// the matrix can be interpreted with multiple inputs, assume the

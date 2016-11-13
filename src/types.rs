@@ -4,6 +4,8 @@ use svd::types::SVDError;
 use eigenvalues::types::EigenError;
 use solve_linear::types::SolveError;
 use least_squares::LeastSquaresError;
+use factorization::qr::QRError;
+use factorization::lu::LUError;
 use std::ops::Sub;
 use std::fmt::Debug;
 use num_traits::Float;
@@ -28,6 +30,8 @@ pub enum Error {
     Eigen(EigenError),
     LeastSquares(LeastSquaresError),
     SolveLinear(SolveError),
+    QR(QRError),
+    LU(LUError),
 }
 
 impl From<SVDError> for Error {
@@ -51,6 +55,18 @@ impl From<LeastSquaresError> for Error {
 impl From<SolveError> for Error {
     fn from(e: SolveError) -> Error {
         Error::SolveLinear(e)
+    }
+}
+
+impl From<QRError> for Error {
+    fn from(e: QRError) -> Error {
+        Error::QR(e)
+    }
+}
+
+impl From<LUError> for Error {
+    fn from(e: LUError) -> Error {
+        Error::LU(e)
     }
 }
 
