@@ -1,3 +1,9 @@
+0.3.0:
+ - Add QR and LU factorizations in `factorization` module
+ - Add matrix row permutation module `permute`, to facilitate LU-factorization
+ - Normalize eigenvalues error naming
+ - Improved documentation across the board
+
 0.2.3:
  - Add `openblas-system` / `netlib-system` features
  - Fix existing `netlib` feature
