@@ -1,4 +1,4 @@
-//! Compute the LU-factorization of a matrix with factors.
+//! Compute the LU-factorization of a rectangular matrix.
 //!
 //! A rectangular matrix A is factored into the product `P * `L` * `U`,
 //! such that:
@@ -44,7 +44,7 @@ pub enum LUError {
     IllegalParameter(i32),
 }
 
-/// Representation of the components Q, R of the factorization of
+/// Representation of the components L, U, P of the factorization of
 /// matrix A.
 #[derive(Debug)]
 pub struct LUFactors<T: LU> {
@@ -221,7 +221,6 @@ macro_rules! impl_lu {
                     let mut perm_i = Vec::new();
                     perm_i.resize(cmp::min(dim.0, dim.1), -1);
 
-                    println!("{:?}", lda);
                     // workspace query
                     ($lu_func(layout,
                               dim.0 as i32,
@@ -232,14 +231,12 @@ macro_rules! impl_lu {
                      perm_i)
                 };
 
-                println!("{:?}\n", perm_i);
-
                 if info == 0 {
                     LUFactors::from_raw(a, perm_i)
                 } else if info < 0 {
                     Err(LUError::IllegalParameter(-info))
                 } else {
-                    unreachable!();
+                    Err(LUError::Singular)
                 }
             }
 
@@ -264,7 +261,7 @@ macro_rules! impl_lu {
                 } else if info < 0 {
                     Err(LUError::IllegalParameter(-info))
                 } else {
-                    Err(LUError::NotInvertible)
+                    Err(LUError::Singular)
                 }
             }
         }
