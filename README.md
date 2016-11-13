@@ -11,10 +11,43 @@
 backend, (specifically with the `lapack` package) to execute linear
 algebra routines with `rust-ndarray` as inputs and outputs.
 
+## Installation / Usage ##
+
+`linxal` is available on [crates.io](https://crates.io) and can be installed via `cargo`. In your `Cargo.toml` file, you can use.
+
+```text
+[dependencies]
+....
+linxal = "0.2"
+```
+
+### Features ###
+`linxal` exposes features to choose the underlying LAPACK / BLAS
+source. By default, `linxal` enables the `openblas` feature, which
+compiles LAPACK and BLAS from the [OpenBLAS](http://www.openblas.net/)
+distribution
+via [`openblas-src`](https://github.com/cmr/openblas-src). You can
+use [netlib](http://www.netlib.org/) LAPACK instead, via:
+
+```text
+...
+[dependencies.linxal]
+version = "0.2"
+default-features = false
+features = ["netlib"]
+```
+
+Other possible features are `openblas-system` and
+`netlib-system`. These are similar to `openblas` and `netlib`, execpt
+that they use the installed shared libraries on your system instead of
+compiling them from source.
+
 ## Documentation ##
+
 Documentation can be found at [https://github.masonium.io/rustdoc/linxal/](https://masonium.github.io/rustdoc/linxal).
 
 ## Example ##
+
 ```rust
 #[macro_use]
 extern crate linxal;

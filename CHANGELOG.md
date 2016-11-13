@@ -1,5 +1,9 @@
+0.2.3:
+ - Add `openblas-system` / `netlib-system` features
+ - Fix existing `netlib` feature
+
 0.2.2:
- - Changed all relevant `Ix` references to `Ix` alias (@bluss)
+ - Changed all relevant `Ix` references to `Ix1` alias (@bluss)
  - Removed old source file
 
 0.2.1:

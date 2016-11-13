@@ -17,6 +17,8 @@ include = ["**/*.rs", "LICENSE", "README.md", "CHANGELOG.md", "Cargo.toml"]
 default = ["openblas"]
 openblas = ["blas/openblas", "lapack/openblas"]
 netlib = ["blas/netlib", "lapack/netlib"]
+openblas-system = ["blas/openblas", "lapack/openblas", "openblas-src/system"]
+netlib-system = ["blas/netlib", "lapack/netlib", "netlib-src/system"]
 
 [dependencies]
 ndarray = "0.6"
@@ -30,3 +32,21 @@ default-features = false
 [dependencies.blas]
 version = "0.15"
 default-features = false
+
+[dependencies.lapack-sys]
+version = "0.11"
+default-features = false
+
+[dependencies.blas-sys]
+version = "0.6"
+default-features = false
+
+[dependencies.openblas-src]
+version = "0.5"
+default-features = false
+optional = true
+
+[dependencies.netlib-src]
+version = "0.5"
+default-features = false
+optional = true
