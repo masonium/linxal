@@ -6,11 +6,11 @@ extern crate lapack;
 
 use ndarray::{Array, Ix2};
 use linxal::svd::{SVD, SingularValue};
-use linxal::types::{Magnitude, c32, c64};
+use linxal::types::{LinxalScalar, c32, c64};
 use num_traits::{One, Zero};
 
 /// Identity matrix SVD
-pub fn svd_test_identity<SV: SingularValue + Magnitude, T: SVD<SV> + One + Zero>() {
+pub fn svd_test_identity<SV: SingularValue, T: SVD<SV> + One + Zero>() {
     const N: usize = 100;
     let m: Array<T, Ix2> = Array::eye(N);
     let solution = SVD::compute(&m, false, false);
@@ -18,7 +18,7 @@ pub fn svd_test_identity<SV: SingularValue + Magnitude, T: SVD<SV> + One + Zero>
     let values = solution.unwrap();
 
     let truth = Array::from_vec(vec![SV::one(); N]);
-    assert_eq_within_tol!(&values.values, &truth, 1e-5);
+    assert_eq_within_tol!(&values.values, &truth, <SV::RealPart as From<f32>>::from(1e-5));
 }
 
 #[test]

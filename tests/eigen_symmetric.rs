@@ -3,7 +3,7 @@ extern crate linxal;
 extern crate ndarray;
 
 use ndarray::{arr1, arr2};
-use linxal::types::{Symmetric, Magnitude};
+use linxal::types::{Symmetric, LinxalScalar};
 use linxal::eigenvalues::{SymEigen};
 
 #[test]

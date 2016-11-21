@@ -6,7 +6,7 @@ extern crate lapack;
 
 use ndarray::{Array, Ix1, Ix2, Axis};
 use linxal::solve_linear::{SolveLinear};
-use linxal::types::{Magnitude};
+use linxal::types::{LinxalScalar};
 
 #[test]
 pub fn solve_linear_vector() {

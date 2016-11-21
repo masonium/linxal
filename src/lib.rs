@@ -46,7 +46,7 @@
 //! extern crate ndarray;
 //!
 //! use linxal::eigenvalues::{Eigen};
-//! use linxal::types::{c32, Magnitude};
+//! use linxal::types::{c32, LinxalScalar};
 //! use ndarray::{Array, arr1, arr2};
 //!
 //! fn main() {
@@ -121,6 +121,8 @@ pub mod solve_linear;
 pub mod least_squares;
 pub mod types;
 pub mod factorization;
+pub mod generate;
+pub mod properties;
 
 #[macro_use]
 pub mod prelude;

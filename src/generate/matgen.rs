@@ -1,0 +1,438 @@
+use impl_prelude::*;
+use super::internal::{slatmt, dlatmt, clatmt, zlatmt};
+use super::internal::{slaror, dlaror, claror, zlaror};
+use rand::{Rng, thread_rng};
+use rand::distributions::{Range, IndependentSample};
+use lapack::c::Layout;
+use num_traits::{Float};
+use generate::types::*;
+
+/// Scalar trait for generating random matrices.
+pub trait MG: LinxalScalar {
+    fn general(gen: &mut GenerateArgs<Self>) -> Result<Array<Self, Ix2>, GenerateError>;
+    fn unitary(gen: &mut GenerateArgs<Self>) -> Result<Array<Self, Ix2>, GenerateError>;
+}
+
+/// Generating arguments
+pub struct GenerateArgs<T: MG> {
+    m: usize,
+    n: usize,
+
+    rank: Option<usize>,
+    bands: Option<(usize, usize)>,
+    symmetry: GenerateSymmetry,
+    values: ValuesOption<T::RealPart>,
+    packing: Packing,
+
+    seed: [i32; 4],
+    workspace: Vec<T>,
+}
+
+impl <T: MG> GenerateArgs<T> {
+
+    /// Returns the desired rank of the output matrix.
+    pub fn rank(&self) -> usize {
+        let k = cmp::min(self.m, self.n);
+        match self.rank {
+            None => k,
+            Some(i) => cmp::min(k, i)
+        }
+    }
+
+    /// Returns an error iff calling generate would yield an error.
+    pub fn validate(&self) -> Result<(), GenerateError> {
+        // Any symmetric matrix needs to be square, with equivalent bands.
+        // Asymmetric matrices must have no packing.
+        match self.symmetry {
+            GenerateSymmetry::Positive | GenerateSymmetry::Symmetric => {
+                if self.m != self.n {
+                    return Err(GenerateError::NotSquare);
+                }
+                match self.bands {
+                    None => (),
+                    Some((kl, ku)) => {
+                        if kl != ku {
+                            return Err(GenerateError::UnequalBands);
+                        }
+                    }
+                }
+            },
+            GenerateSymmetry::NoSymmetry => {
+                match self.packing {
+                    Packing::Full => (),
+                    Packing::UpperOnly | Packing::LowerOnly => {
+                        return Err(GenerateError::InvalidPacking);
+                    }
+                }
+            }
+        };
+
+        // We need at least as many values as the rank of the
+        // matrix when exact values are provided.
+        match self.values {
+            ValuesOption::Exact(ref v) => {
+                if v.len() < self.rank() {
+                    return Err(GenerateError::NotEnoughValues);
+                }
+            },
+            _ => { }
+        }
+
+        Ok(())
+    }
+
+    /// Generate values based on the `ValuesOption` and rank.
+    fn values(&self) -> Result<Vec<T::RealPart>, GenerateError> {
+        let ns = cmp::min(self.m, self.n);
+        let nonzero_entries = match self.rank {
+            None => 0,
+            Some(k) => if k > ns { return Err(GenerateError::InvalidRank) } else { ns - k }
+        };
+
+        let mut values = match self.values {
+            ValuesOption::EvenUniform(a, b) => {
+                let mut vs = Array::linspace(a, b, ns - nonzero_entries).into_raw_vec();
+                vs.resize(ns, T::RealPart::zero());
+                vs
+            },
+            ValuesOption::Exact(ref v) => {
+                if v.len() < nonzero_entries {
+                    return Err(GenerateError::NotEnoughValues);
+                }
+                let mut vs = v.clone();
+                vs.resize(nonzero_entries, T::RealPart::zero());
+                vs.resize(ns, T::RealPart::zero());
+                vs
+            }
+        };
+
+        // Take the absolute value for positive or non-symmetric
+        // matrices.
+        if self.symmetry == GenerateSymmetry::Positive {
+            for x in values.iter_mut() {
+                *x = x.abs();
+            }
+        }
+
+        Ok(values)
+    }
+}
+
+macro_rules! impl_mat_gen {
+    ($impl_type:ty, $gen_gen:ident, $ortho_gen:ident) => (
+        impl MG for $impl_type {
+            fn general(gen: &mut GenerateArgs<Self>) -> Result<Array<Self, Ix2>, GenerateError> {
+                /// Validate the option inputs.
+                try!(gen.validate());
+
+                let mut arr = matrix_with_layout((gen.m, gen.n), Layout::ColumnMajor);
+
+                let mut values = try!(gen.values());
+
+                let dist = b'U'; // we always proved values, so this is irrelevant.
+                let mode = 0;
+
+
+                let (kl, ku) = gen.bands.unwrap_or((gen.m, gen.n));
+
+                let info = {
+                    let (slice, _, lda) = slice_and_layout_mut(&mut arr).unwrap();
+                    $gen_gen(gen.m as i32, gen.n as i32, dist, &mut gen.seed,
+                             gen.symmetry as u8, &mut values, mode,
+                             1.0, 1.0,
+                             gen.rank.unwrap_or(cmp::min(gen.m, gen.n)) as i32,
+                             kl as i32, ku as i32, gen.packing as u8,
+                             slice, lda as i32, &mut gen.workspace)
+                };
+
+                match info {
+                    0 => Ok(arr),
+                    -1 => Err(GenerateError::NotSquare),
+                    -2 | -3 | -5 | -7 | -8 | -10 | -12 | -14 => unreachable!(),
+                    -11 => Err(GenerateError::BadUpperBand),
+                    1 => Err(GenerateError::EigenvalueGeneration),
+                    2 => Err(GenerateError::EigenvalueScale),
+                    3 => Err(GenerateError::RawMatrixGeneration),
+                    _ => unreachable!()
+                }
+            }
+
+            fn unitary(gen: &mut GenerateArgs<Self>)
+                       -> Result<Array<Self, Ix2>, GenerateError> {
+                let d = (gen.m, gen.n).f();
+                let mut arr = Array::default(d);
+
+                let mut info: i32 = 0;
+                {
+                    let (slice, _, lda) = slice_and_layout_mut(&mut arr).unwrap();
+                    $ortho_gen(b'L', b'I', gen.m as i32, gen.n as i32,
+                               slice, lda as i32, &mut gen.seed, &mut gen.workspace,
+                               &mut info);
+                }
+
+                if info == 0 {
+                    Ok(arr)
+                } else if info < 0 {
+                    Err(GenerateError::IllegalParameter(-info))
+                } else  {
+                    unreachable!();
+                }
+
+            }
+        }
+    )
+}
+
+impl_mat_gen!(f32, slatmt, slaror);
+impl_mat_gen!(f64, dlatmt, dlaror);
+impl_mat_gen!(c32, clatmt, claror);
+impl_mat_gen!(c64, zlatmt, zlaror);
+
+/// Structure for creating positive semi-definite matrices.
+pub struct RandomSemiPositive<T: MG> {
+    args: GenerateArgs<T>
+}
+
+impl <T: MG> RandomSemiPositive<T> {
+    /// Create a new matrix generator for random semi-positive definite matrices.
+    pub fn new<Rand: Rng>(n: usize, rand: &mut Rand) -> RandomSemiPositive<T> {
+        RandomSemiPositive {
+            args:
+            GenerateArgs {
+                m: n, n: n,
+
+                seed: new_seed(rand),
+                workspace: new_workspace(n, n),
+
+                rank: None, bands: None,
+                symmetry: GenerateSymmetry::Positive,
+                values: ValuesOption::EvenUniform(1.0.into(), 10.0.into()),
+                packing: Packing::Full
+            }
+        }
+    }
+
+
+    /// Set the rank of the matrix.
+    ///
+    /// The rank is capped to the size of the matrix.
+    ///
+    /// # Remarks
+    ///
+    /// The rank is ignored when the eigenvalues / singular
+    /// values are given as input.
+    pub fn rank(&mut self, n: usize) -> &mut Self {
+        self.args.rank = Some(n);
+        self
+    }
+
+    /// Set the matrix to be full rank.
+    ///
+    /// # Remarks
+    ///
+    /// The rank is ignored when the eigenvalues / singular
+    /// values are given as input.
+    pub fn full_rank(&mut self) -> &mut Self {
+        self.args.rank = None;
+        self
+    }
+
+    /// Set the upper and lower band of the matrix.
+    ///
+    /// If the band is larger than the matrix, it is interpreted as a
+    /// full-sized matrix.
+    pub fn bands(&mut self, lower: usize, upper: usize) -> &mut Self {
+        self.args.bands = Some((lower, upper));
+        self
+    }
+
+    /// Set the matrix to be full bandwidth.
+    pub fn full_bands(&mut self) -> &mut Self {
+        self.args.bands = None;
+        self
+    }
+
+    /// Set the matrix to be diagonal.
+    pub fn diagonal(&mut self) -> &mut Self {
+        self.args.bands = Some((0, 0));
+        self
+    }
+
+    /// Set how the entries of the matrix are packed.
+    ///
+    /// # Remarks
+    /// Only symmetric matrices can have non-`Full` packing.
+    pub fn packing(&mut self, packing: Packing) -> &mut Self {
+        self.args.packing = packing;
+        self
+    }
+
+    /// Set the singular values to the specified values.
+    ///
+    /// When the rank of the matrix is specified as `k`, any values
+    /// after the `k`th are ignored and set to zero when the matrix is
+    /// generated.
+    ///
+    /// The absolute value of all entries is taken.
+    pub fn singular_values(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+        self.args.values = ValuesOption::Exact(values.iter().map(|x| x.abs()).collect());
+        self
+    }
+
+    /// Set the singular_values to the specified values.
+    #[inline]
+    pub fn sv(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+        self.singular_values(values)
+    }
+
+    /// Draw the singular_values from a uniform distribution.
+    ///
+    /// The absolute value of all entries is taken, to ensure positive
+    /// semi-definiteness.
+    pub fn sv_random_uniform(&mut self, min: T::RealPart, max: T::RealPart) -> &mut Self {
+        let n = self.args.n;
+        let mut rng = thread_rng();
+        let dist = Range::new(min, max);
+        self.args.values = ValuesOption::Exact((0..n).map(|_| dist.ind_sample(&mut rng)).collect());
+        self
+    }
+
+    /// Generate a matrix matching the specifications previously
+    /// specified.
+    pub fn generate(&mut self) -> Result<Array<T, Ix2>, GenerateError> {
+        MG::general(&mut self.args)
+    }
+}
+
+
+/// Structure for creating general rectangular matrices with specific eigenvalues
+pub struct RandomGeneral<T: MG> {
+    args: GenerateArgs<T>
+}
+
+impl <T: MG> RandomGeneral<T> {
+    /// Create a new matrix generator for random rectangular matrices.
+    pub fn new<Rand: Rng>(m: usize, n: usize, rand: &mut Rand) -> RandomGeneral<T> {
+        RandomGeneral {
+            args:
+            GenerateArgs {
+                m: m, n: n,
+
+                seed: new_seed(rand),
+                workspace: new_workspace(m, n),
+
+                rank: None,
+                bands: None,
+                symmetry: GenerateSymmetry::NoSymmetry,
+                values: ValuesOption::EvenUniform(1.0.into(), 10.0.into()),
+                packing: Packing::Full
+            }
+        }
+    }
+
+    /// Set the rank of the matrix.
+    ///
+    /// The rank is capped to the size of the matrix.
+    ///
+    /// # Remarks
+    ///
+    /// The rank is ignored when the eigenvalues / singular
+    /// values are given as input.
+    pub fn rank(&mut self, n: usize) -> &mut Self {
+        self.args.rank = Some(n);
+        self
+    }
+
+    /// Set the matrix to be full rank.
+    ///
+    /// # Remarks
+    ///
+    /// The rank is ignored when the eigenvalues / singular
+    /// values are given as input.
+    pub fn full_rank(&mut self) -> &mut Self {
+        self.args.rank = None;
+        self
+    }
+
+    /// Set the upper and lower band of the matrix.
+    ///
+    /// If the band is larger than the matrix, it is interpreted as a
+    /// full-sized matrix.
+    pub fn bands(&mut self, lower: usize, upper: usize) -> &mut Self {
+        self.args.bands = Some((lower, upper));
+        self
+    }
+
+    /// Set the matrix to be full bandwidth.
+    pub fn full_bands(&mut self) -> &mut Self {
+        self.args.bands = None;
+        self
+    }
+
+    /// Set the matrix to be diagonal.
+    pub fn diagonal(&mut self) -> &mut Self {
+        self.args.bands = Some((0, 0));
+        self
+    }
+
+    /// Set the singular values to the specified values.
+    ///
+    /// When the rank of the matrix is specified as `k`, any values
+    /// after the `k`th are ignored and set to zero when the matrix is
+    /// generated.
+    pub fn singular_values(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+        self.args.values = ValuesOption::Exact(values.iter().map(|x| x.abs()).collect());
+        self
+    }
+
+    /// Set the singular_values to the specified values.
+    #[inline]
+    pub fn sv(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+        self.singular_values(values)
+    }
+
+    /// Draw the singular_values from a uniform distribution.
+    pub fn sv_random_uniform(&mut self, min: T::RealPart, max: T::RealPart) -> &mut Self {
+        let n = self.args.n;
+        let mut rng = thread_rng();
+        let dist = Range::new(min, max);
+        self.args.values = ValuesOption::Exact((0..n).map(|_| dist.ind_sample(&mut rng)).collect());
+        self
+    }
+
+    /// Generate a matrix matching the specifications previously
+    /// specified.
+    pub fn generate(&mut self) -> Result<Array<T, Ix2>, GenerateError> {
+        MG::general(&mut self.args)
+    }
+}
+
+
+/// Structure for creating unitary matrices.
+pub struct RandomUnitary<T: MG> {
+    args: GenerateArgs<T>
+}
+
+impl<T: MG> RandomUnitary<T> {
+    pub fn new<Rand: Rng>(n: usize, rand: &mut Rand) -> RandomUnitary<T> {
+        RandomUnitary {
+            args:
+            GenerateArgs {
+                m: n, n: n,
+
+                seed: new_seed(rand),
+                workspace: new_workspace(n, n),
+
+                rank: None, bands: None,
+                symmetry: GenerateSymmetry::NoSymmetry,
+                values: ValuesOption::EvenUniform(1.0.into(), 10.0.into()),
+                packing: Packing::Full
+            }
+        }
+    }
+
+    /// Generate a unitary matrix.
+    pub fn generate(&mut self) -> Result<Array<T, Ix2>, GenerateError> {
+        MG::unitary(&mut self.args)
+    }
+}

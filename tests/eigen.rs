@@ -3,7 +3,7 @@ extern crate linxal;
 extern crate ndarray;
 
 use linxal::eigenvalues::{Eigen, EigenError};
-use linxal::types::{c32, Magnitude};
+use linxal::types::{c32, LinxalScalar};
 use ndarray::{arr1, arr2, Array};
 
 #[test]

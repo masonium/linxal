@@ -1,14 +1,15 @@
 use ndarray::prelude::*;
-use num_traits::{Float, ToPrimitive};
+use super::super::types::LinxalFloat;
+use num_traits::{ToPrimitive};
 use std::fmt::Display;
 
 /// Trait for singular values
 ///
 /// A type implementing `SingularValue` can be returned as a singular
 /// value by `SVD::compute*`.
-pub trait SingularValue: Float + Display + ToPrimitive {}
+pub trait SingularValue: LinxalFloat + Display + ToPrimitive {}
 
-impl<T: Float + Display + ToPrimitive> SingularValue for T {}
+impl<T: LinxalFloat + Display + ToPrimitive> SingularValue for T {}
 
 
 /// A solution to the singular value decomposition.
