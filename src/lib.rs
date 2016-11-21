@@ -105,8 +105,12 @@
 
 #[macro_use]
 extern crate ndarray;
+
+extern crate libc;
+extern crate lapack_sys;
 extern crate lapack;
 extern crate num_traits;
+extern crate rand;
 
 pub mod util;
 pub mod permute;

@@ -8,7 +8,7 @@ use factorization::qr::QRError;
 use factorization::lu::LUError;
 use std::ops::Sub;
 use std::fmt::Debug;
-use num_traits::{Float, Zero, One};
+use num_traits::{Float, Zero, One, NumCast};
 pub use lapack::{c32, c64};
 
 /// Enum for symmetric matrix inputs.
@@ -100,9 +100,32 @@ impl Magnitude for c64 {
 }
 
 /// Common traits for all operations.
-pub trait LinxalScalar: Sized + Clone + Magnitude + Debug + Zero + One + Sub<Output=Self> {}
-impl<T: Sized + Clone + Magnitude + Debug + Zero + One + Sub<Output=T>> LinxalScalar for T {}
+pub trait LinxalScalar: Sized + Clone + Magnitude + Debug + Zero + One + Sub<Output=Self> {
+    type RealPart: Float + NumCast;
+}
+
+impl LinxalScalar for f32 {
+    type RealPart = f32;
+}
+
+impl LinxalScalar for f64 {
+    type RealPart = f64;
+}
+
+impl LinxalScalar for c32 {
+    type RealPart = f32;
+}
+
+impl LinxalScalar for c64 {
+    type RealPart = f64;
+}
+
 
 /// Scalars that are also (real) floats.
 pub trait LinxalFloat: LinxalScalar + Float {}
 impl<T: LinxalScalar + Float> LinxalFloat for T {}
+
+/// Scalars that are also (real) floats.
+pub trait LinxalComplex: LinxalScalar {}
+impl LinxalComplex for c32 {}
+impl LinxalComplex for c64 {}

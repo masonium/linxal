@@ -24,6 +24,7 @@ netlib-system = ["blas/netlib", "lapack/netlib", "netlib-src/system"]
 ndarray = "0.7"
 num-traits = "0.1"
 rand = "0.3"
+libc = "0.2"
 
 [dependencies.lapack]
 version = "0.11"
