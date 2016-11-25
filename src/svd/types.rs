@@ -1,7 +1,6 @@
 use ndarray::prelude::*;
 use num_traits::{Float, ToPrimitive};
 use std::fmt::Display;
-use ndarray::{Ix1, Ix2};
 
 /// Trait for singular values
 ///

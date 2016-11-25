@@ -137,7 +137,7 @@ impl<T: LU> LUFactors<T> {
         // Fix the diagonal and upper-triangle.
         for (r, mut row) in l.outer_iter_mut().enumerate().take(k) {
             row[r] = one;
-            row.slice_mut(s![r as isize + 1..]).assign_scalar(&zero);
+            row.slice_mut(s![r as isize + 1..]).fill(zero);
         }
 
         l
@@ -162,7 +162,7 @@ impl<T: LU> LUFactors<T> {
 
         // Fix the lower-triangle.
         for (r, mut row) in u.outer_iter_mut().enumerate().take(k) {
-            row.slice_mut(s![..r as isize]).assign_scalar(&zero);
+            row.slice_mut(s![..r as isize]).fill(zero);
         }
 
         u

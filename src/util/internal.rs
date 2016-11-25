@@ -1,16 +1,20 @@
 use ndarray::prelude::*;
-use ndarray::{Ix2, Data, DataMut};
+use ndarray::{Data, DataMut};
 use lapack::c::Layout;
 use std::slice;
 
 /// Return an array with the specified dimensions and layout.
 ///
-/// This function is used internally to ensure that
-pub fn matrix_with_layout<T: Default>(d: Ix2, layout: Layout) -> Array<T, Ix2> {
-    Array::default(match layout {
-        Layout::RowMajor => d.into(),
-        Layout::ColumnMajor => d.f(),
-    })
+/// This function is used internally to ensure that the matrix outputs
+/// are created to be compatible with the matrix input.
+pub fn matrix_with_layout<T: Default, Sh>(d: Sh, layout: Layout)
+                                          -> Array<T, Ix2>
+    where Sh: ShapeBuilder<Dim=Ix2> {
+    let shape = match layout {
+            Layout::RowMajor => d.into_shape(),
+            Layout::ColumnMajor => d.f(),
+    };
+    Array::default(shape)
 }
 
 /// Return the slice, layout, and leading dimension of the matrix.

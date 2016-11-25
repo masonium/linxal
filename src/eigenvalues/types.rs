@@ -1,7 +1,6 @@
 //! Error and solution types for eigenvalue problems.
 
-use ndarray::prelude::*;
-use ndarray::{Ix1, Ix2};
+use impl_prelude::*;
 
 /// Errors from an eigenvalue problem.
 #[derive(Debug, Clone, PartialEq, Eq)]

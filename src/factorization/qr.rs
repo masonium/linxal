@@ -11,7 +11,6 @@
 use impl_prelude::*;
 use lapack::c::{sgeqrf, sorgqr, dgeqrf, dorgqr, cgeqrf, cungqr, zgeqrf, zungqr};
 use ndarray as nd;
-use num_traits::Zero;
 
 /// Error for QR-based computations.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -252,7 +251,7 @@ macro_rules! impl_qr {
 
                 // Replace zeros below the diagonal.
                 for (i, mut row) in r.outer_iter_mut().enumerate().take(nn as usize) {
-                    row.slice_mut(s![..i as isize]).assign_scalar(&zero);
+                    row.slice_mut(s![..i as isize]).fill(zero);
                 }
 
                 Ok(r)

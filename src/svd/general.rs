@@ -51,7 +51,7 @@ enum SVDMethod {
 
 /// Choose a method based on the problem.
 fn select_svd_method(d: &Ix2, compute_either: bool) -> SVDMethod {
-    let mx = cmp::max(d.0, d.1);
+    let mx = cmp::max(d[0], d[1]);
 
     // When we're computing one of them singular vector sets, we have
     // to compute both with divide and conquer. So, we're bound by the
@@ -78,8 +78,8 @@ macro_rules! impl_svd {
                                -> Result<SVDSolution<$impl_type, $sv_type>, SVDError>
                 where D: DataMut<Elem=Self> + DataOwned<Elem = Self>{
 
-                let dim = mat.dim();
-                let (m, n) = dim;
+                let (m, n) = mat.dim();
+                let raw_dim = mat.raw_dim();
                 let mut s = Array::default(cmp::min(m, n));
 
                 let (slice, layout, lda) = match slice_and_layout_mut(&mut mat) {
@@ -88,7 +88,7 @@ macro_rules! impl_svd {
                 };
 
                 let compute_either = compute_u || compute_vt;
-                let method = select_svd_method(&dim, compute_either);
+                let method = select_svd_method(&raw_dim, compute_either);
                 if method == SVDMethod::DivideAndConquer {
                     compute_u = compute_either;
                     compute_vt = compute_either;

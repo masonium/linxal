@@ -21,7 +21,7 @@ openblas-system = ["blas/openblas", "lapack/openblas", "openblas-src/system"]
 netlib-system = ["blas/netlib", "lapack/netlib", "netlib-src/system"]
 
 [dependencies]
-ndarray = "0.6"
+ndarray = "0.7"
 num-traits = "0.1"
 rand = "0.3"
 
