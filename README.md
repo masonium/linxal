@@ -18,7 +18,7 @@ algebra routines with `rust-ndarray` as inputs and outputs.
 ```text
 [dependencies]
 ....
-linxal = "0.2"
+linxal = "0.3"
 ```
 
 ### Features ###
@@ -32,7 +32,7 @@ use [netlib](http://www.netlib.org/) LAPACK instead, via:
 ```text
 ...
 [dependencies.linxal]
-version = "0.2"
+version = "0.3"
 default-features = false
 features = ["netlib"]
 ```
@@ -101,18 +101,27 @@ fn main() {
   user-defined formats.
 
 ## Goals ##
-- [ ] Major Linear algbra routines
+- [ ] Major linear algebra routines
   - [X] Eigenvalues
   - [X] Singular Value
   - [X] Linear Solvers
   - [X] Linear Least-Squares
   - [ ] Matrix Factorizations (QR, LU, etc.)
+	- [X] QR
+	- [X] LU
+	- [ ] Cholesky
+	- [ ] Schur
   - [ ] Generalized Eigenvalues
   - [ ] Generalized Singular Value Decomposition
 - [ ] Multiple matrix formats
   - [X] General (direct via `ndarray`)
   - [ ] Symmetric / Hermitian
   - [ ] Banded (Packed)
+- [ ] Random matrix generation
+  - [ ] General
+  - [ ] Symmetric / Hermitian
+  - [ ] Positive
+  - [ ] Unitary
 
 ## Contributing ##
 Pull requests of all kinds (code, documentation, formatting, spell-checks) are welcome!
