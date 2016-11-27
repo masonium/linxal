@@ -16,7 +16,7 @@ use generate::types::*;
 /// Scalar trait for generating random matrices.
 pub trait MG: LinxalScalar {
     /// Create a matrix based on the specified arguments.
-    fn general(gen: &mut GenerateArgs<Self>) -> Result<(Array<Self, Ix2>, Vec<Self::RealPart>), GenerateError>;
+    fn general(gen: &mut GenerateArgs<Self>) -> Result<(Array<Self, Ix2>, Array<Self::RealPart, Ix1>), GenerateError>;
 
     /// Create a unitary matrix based on the specified arguments.
     fn unitary(gen: &mut GenerateArgs<Self>) -> Result<Array<Self, Ix2>, GenerateError>;
@@ -27,6 +27,7 @@ enum ValuesOption<T> {
     /// Values are created by evenly spacing values within a set of
     /// boundaries.
     EvenUniform(T, T),
+    RandomUniform(T, T),
     Exact(Vec<T>)
 }
 
@@ -108,30 +109,33 @@ impl <T: MG> GenerateArgs<T> {
 
     /// Generate values based on the `ValuesOption`, rank, and
     /// symmetry.
-    fn values(&self) -> Result<Vec<T::RealPart>, GenerateError> {
+    fn values(&self) -> Result<Array<T::RealPart, Ix1>, GenerateError> {
         let ns = cmp::min(self.m, self.n);
         let nonzero_entries = match self.rank {
             None => 0,
             Some(k) => if k > ns { return Err(GenerateError::InvalidRank) } else { ns - k }
         };
 
+        // Create the non-zero entries based on the ValuesOption
         let mut values = match self.values {
             ValuesOption::EvenUniform(a, b) => {
-                let mut vs = if nonzero_entries >= 1 {
+                if nonzero_entries >= 1 {
                     Array::linspace(a, b, ns - nonzero_entries).into_raw_vec()
                 } else {
                     vec![(a+b) * 0.5.into()]
-                };
-                vs.resize(ns, T::RealPart::zero());
-                vs
+                }
             },
+            ValuesOption::RandomUniform(a, b) => {
+                let mut rng = thread_rng();
+                let range = Range::new(a, b);
+                (0..nonzero_entries).map(|_| range.ind_sample(&mut rng)).collect()
+            }
             ValuesOption::Exact(ref v) => {
                 if v.len() < nonzero_entries {
                     return Err(GenerateError::NotEnoughValues);
                 }
                 let mut vs = v.clone();
                 vs.resize(nonzero_entries, T::RealPart::zero());
-                vs.resize(ns, T::RealPart::zero());
                 vs
             }
         };
@@ -144,7 +148,10 @@ impl <T: MG> GenerateArgs<T> {
             }
         }
 
-        Ok(values)
+        // Extend to the full set with 0s
+        values.resize(ns, T::RealPart::zero());
+
+        Ok(Array::from_vec(values))
     }
 }
 
@@ -152,7 +159,7 @@ macro_rules! impl_mat_gen {
     ($impl_type:ty, $gen_gen:ident, $ortho_gen:ident) => (
         impl MG for $impl_type {
             fn general(gen: &mut GenerateArgs<Self>)
-                       -> Result<(Array<Self, Ix2>, Vec<Self::RealPart>), GenerateError> {
+                       -> Result<(Array<Self, Ix2>, Array<Self::RealPart, Ix1>), GenerateError> {
                 /// Validate the option inputs.
                 try!(gen.validate());
 
@@ -169,7 +176,7 @@ macro_rules! impl_mat_gen {
                 let info = {
                     let (slice, _, lda) = slice_and_layout_mut(&mut arr).unwrap();
                     $gen_gen(gen.m as i32, gen.n as i32, dist, &mut gen.seed,
-                             gen.symmetry as u8, &mut values, mode,
+                             gen.symmetry as u8, values.as_slice_mut().unwrap(), mode,
                              1.0, 1.0,
                              gen.rank.unwrap_or(cmp::min(gen.m, gen.n)) as i32,
                              kl as i32, ku as i32, gen.packing as u8,
@@ -318,10 +325,7 @@ impl <T: MG> RandomSemiPositive<T> {
     /// The absolute value of all entries is taken, to ensure positive
     /// semi-definiteness.
     pub fn sv_random_uniform(&mut self, min: T::RealPart, max: T::RealPart) -> &mut Self {
-        let n = self.args.n;
-        let mut rng = thread_rng();
-        let dist = Range::new(min, max);
-        self.args.values = ValuesOption::Exact((0..n).map(|_| dist.ind_sample(&mut rng)).collect());
+        self.args.values = ValuesOption::RandomUniform(min, max);
         self
     }
 
@@ -403,9 +407,6 @@ impl <T: MG> RandomSymmetric<T> {
     }
 
     /// Set how the entries of the matrix are packed.
-    ///
-    /// # Remarks
-    /// Only symmetric matrices can have non-`Full` packing.
     pub fn packing(&mut self, packing: Packing) -> &mut Self {
         self.args.packing = packing;
         self
@@ -430,11 +431,8 @@ impl <T: MG> RandomSymmetric<T> {
     }
 
     /// Draw the eigenvalues from a uniform distribution.
-    pub fn ev_random_uniform(&mut self, min: T::RealPart, max: T::RealPart) -> &mut Self {
-        let n = self.args.n;
-        let mut rng = thread_rng();
-        let dist = Range::new(min, max);
-        self.args.values = ValuesOption::Exact((0..n).map(|_| dist.ind_sample(&mut rng)).collect());
+    pub fn ev_random_uniform<F: Into<T::RealPart>>(&mut self, min: F, max: F) -> &mut Self {
+        self.args.values = ValuesOption::RandomUniform(min.into(), max.into());
         self
     }
 
@@ -442,6 +440,14 @@ impl <T: MG> RandomSymmetric<T> {
     /// specified.
     pub fn generate(&mut self) -> Result<Array<T, Ix2>, GenerateError> {
         MG::general(&mut self.args).map(|x| x.0)
+    }
+
+    /// Generate a matrix matching the specifications, and return the
+    /// eigenvalues of the generated matrix.
+    ///
+    /// The returned eigenvalues include any changes made
+    pub fn generate_with_ev(&mut self) -> Result<(Array<T, Ix2>, Array<T::RealPart, Ix1>), GenerateError> {
+        MG::general(&mut self.args)
     }
 }
 
@@ -533,11 +539,8 @@ impl <T: MG> RandomGeneral<T> {
     }
 
     /// Draw the singular_values from a uniform distribution.
-    pub fn sv_random_uniform(&mut self, min: T::RealPart, max: T::RealPart) -> &mut Self {
-        let n = self.args.n;
-        let mut rng = thread_rng();
-        let dist = Range::new(min, max);
-        self.args.values = ValuesOption::Exact((0..n).map(|_| dist.ind_sample(&mut rng)).collect());
+    pub fn sv_random_uniform<F: Into<T::RealPart>>(&mut self, min: F, max: F) -> &mut Self {
+        self.args.values = ValuesOption::RandomUniform(min.into(), max.into());
         self
     }
 
@@ -547,7 +550,7 @@ impl <T: MG> RandomGeneral<T> {
     }
 
     /// Generate a matrix
-    pub fn generate_with_sv(&mut self) -> Result<(Array<T, Ix2>, Vec<T::RealPart>), GenerateError> {
+    pub fn generate_with_sv(&mut self) -> Result<(Array<T, Ix2>, Array<T::RealPart, Ix1>), GenerateError> {
         MG::general(&mut self.args)
     }
 }
