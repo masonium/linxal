@@ -5,37 +5,37 @@ extern crate linxal;
 extern crate lapack;
 
 use ndarray::{Array, Ix2};
-use linxal::svd::{SVD, SingularValue};
-use linxal::types::{Magnitude, c32, c64};
+use linxal::svd::{SVD};
+use linxal::types::{LinxalScalar, c32, c64};
 use num_traits::{One, Zero};
 
 /// Identity matrix SVD
-pub fn svd_test_identity<SV: SingularValue + Magnitude, T: SVD<SV> + One + Zero>() {
+pub fn svd_test_identity<T: SVD>() {
     const N: usize = 100;
     let m: Array<T, Ix2> = Array::eye(N);
     let solution = SVD::compute(&m, false, false);
     assert!(solution.is_ok());
     let values = solution.unwrap();
 
-    let truth = Array::from_vec(vec![SV::one(); N]);
-    assert_eq_within_tol!(&values.values, &truth, 1e-5);
+    let truth = Array::from_vec(vec![T::RealPart::one(); N]);
+    assert_eq_within_tol!(&values.values, &truth, 1e-5.into());
 }
 
 #[test]
 pub fn svd_test_identity_f32() {
-    svd_test_identity::<f32, f32>();
+    svd_test_identity::<f32>();
 }
 #[test]
 pub fn svd_test_identity_f64() {
-    svd_test_identity::<f64, f64>();
+    svd_test_identity::<f64>();
 }
 #[test]
 pub fn svd_test_identity_c32() {
-    svd_test_identity::<f32, c32>();
+    svd_test_identity::<c32>();
 }
 #[test]
 pub fn svd_test_identity_c64() {
-    svd_test_identity::<f64, c64>();
+    svd_test_identity::<c64>();
 }
 
 

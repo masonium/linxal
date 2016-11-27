@@ -11,13 +11,7 @@ use impl_prelude::*;
 ///
 /// In order to extract eigenvalues or eigenvectors from a matrix,
 /// that matrix with must have  entries implementing the `Eigen` trait.
-pub trait SymEigen: Sized {
-    /// Scalar type of the resulting eigenvalues.
-    type Eigenvalue;
-
-    /// Solution structure from the eigenvalue computation.
-    type Solution;
-
+pub trait SymEigen: LinxalScalar {
     /// Return the real eigenvalues of a symmetric matrix.
     ///
     /// If `with_vectors` is true, the right eigenvectors of 'V' are
@@ -25,13 +19,13 @@ pub trait SymEigen: Sized {
     fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>,
                       uplo: Symmetric,
                       with_vectors: bool)
-                      -> Result<Array<Self::Eigenvalue, Ix1>, EigenError>
+                      -> Result<Array<Self::RealPart, Ix1>, EigenError>
         where D: DataMut<Elem = Self>;
 
     /// Return the real eigenvalues of a symmetric matrix.
     fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
                        uplo: Symmetric)
-                       -> Result<Array<Self::Eigenvalue, Ix1>, EigenError>
+                       -> Result<Array<Self::RealPart, Ix1>, EigenError>
         where D: DataMut<Elem = Self> + DataOwned<Elem = Self> {
         Self::compute_mut(&mut mat, uplo, false)
     }
@@ -45,18 +39,16 @@ pub trait SymEigen: Sized {
     fn compute<D>(mat: &ArrayBase<D, Ix2>,
                   uplo: Symmetric,
                   with_vectors: bool)
-                  -> Result<Self::Solution, EigenError>
+                  -> Result<Solution<Self, Self::RealPart>, EigenError>
         where D: Data<Elem = Self>;
 }
 
 macro_rules! impl_sym_eigen {
     ($impl_type:ident, $eigen_type:ident, $func:ident) => (
         impl SymEigen for $impl_type {
-            type Eigenvalue = $eigen_type;
-            type Solution = Solution<Self, Self::Eigenvalue>;
 
             fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
-                Result<Array<Self::Eigenvalue, Ix1>, EigenError>
+                Result<Array<Self::RealPart, Ix1>, EigenError>
                 where D: DataMut<Elem=Self>
             {
                 let dim = mat.dim();
@@ -88,7 +80,7 @@ macro_rules! impl_sym_eigen {
 
             fn compute<D>(mat: &ArrayBase<D, Ix2>,
                           uplo: Symmetric,
-                          with_vectors: bool) -> Result<Self::Solution, EigenError>
+                          with_vectors: bool) -> Result<Solution<Self, Self::RealPart>, EigenError>
                 where D: Data<Elem=Self> {
                 let vec: Vec<Self> = mat.iter().cloned().collect();
                 let mut new_mat = Array::from_shape_vec(mat.dim(), vec).unwrap();

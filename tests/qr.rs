@@ -7,7 +7,7 @@ extern crate num_traits;
 
 use ndarray::{Array, ArrayBase, arr1, Data, Ix2};
 use linxal::factorization::{QRFactors};
-use linxal::prelude::{Magnitude};
+use linxal::types::{LinxalScalar};
 
 /// Check that all the properties of the qr factorization are
 /// reasonable.

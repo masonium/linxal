@@ -6,7 +6,7 @@ extern crate ndarray;
 extern crate num_traits;
 
 use ndarray::{Array, ArrayBase, Data, Ix2};
-use linxal::types::Magnitude;
+use linxal::types::{LinxalScalar};
 use linxal::factorization::{LUError, LUFactors};
 use std::cmp;
 

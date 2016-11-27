@@ -1,14 +1,16 @@
 //! Globally-used traits, structs, and enums
-
 use svd::types::SVDError;
+use ndarray::LinalgScalar;
 use eigenvalues::types::EigenError;
 use solve_linear::types::SolveError;
 use least_squares::LeastSquaresError;
 use factorization::qr::QRError;
 use factorization::lu::LUError;
 use std::ops::Sub;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use num_traits::{Float, Zero, One, NumCast};
+use std::{f32, f64};
+use rand::distributions::range::SampleRange;
 pub use lapack::{c32, c64};
 
 /// Enum for symmetric matrix inputs.
@@ -70,54 +72,92 @@ impl From<LUError> for Error {
     }
 }
 
-/// Represents quantities that have a magnitude.
-pub trait Magnitude: Copy {
-    fn mag(self) -> f64;
-}
+/// Trait for matrix operations and utilities, including conjugation and magnitude.
+///
+/// This trait is unifies most required operations for real and
+/// complex scalars.
+pub trait LinxalScalar: Sized + Clone + Debug + Display + Zero + One + Sub<Output=Self> + LinalgScalar {
+    type RealPart: LinxalScalar + Float + NumCast + From<f32> + SampleRange;
 
-impl Magnitude for f32 {
-    fn mag(self) -> f64 {
-        self.abs() as f64
-    }
-}
+    /// Return the conjugate of the value.
+    fn cj(self) -> Self;
 
-impl Magnitude for f64 {
-    fn mag(self) -> f64 {
-        self.abs()
-    }
-}
+    /// Returns the magnitude of the scalar.
+    fn mag(self) -> Self::RealPart;
 
-impl Magnitude for c32 {
-    fn mag(self) -> f64 {
-        self.norm() as f64
-    }
-}
+    /// Return the machine epsilon for the value.
+    fn eps() -> Self::RealPart;
 
-impl Magnitude for c64 {
-    fn mag(self) -> f64 {
-        self.norm()
-    }
-}
-
-/// Common traits for all operations.
-pub trait LinxalScalar: Sized + Clone + Magnitude + Debug + Zero + One + Sub<Output=Self> {
-    type RealPart: Float + NumCast;
+    /// Return the default tolerance used for comparisons.
+    fn tol() -> Self::RealPart;
 }
 
 impl LinxalScalar for f32 {
     type RealPart = f32;
+
+    fn cj(self) -> Self {
+        self
+    }
+    fn eps() -> Self::RealPart {
+        f32::EPSILON
+    }
+    fn mag(self) -> Self::RealPart {
+        self.abs()
+    }
+    fn tol() -> Self::RealPart {
+        1e-5
+    }
 }
 
 impl LinxalScalar for f64 {
     type RealPart = f64;
+
+    fn cj(self) -> Self {
+        self
+    }
+    fn eps() -> Self::RealPart {
+        f64::EPSILON
+    }
+    fn mag(self) -> Self::RealPart {
+        self.abs()
+    }
+    fn tol() -> Self::RealPart {
+        2e-14
+    }
 }
 
 impl LinxalScalar for c32 {
     type RealPart = f32;
+
+    fn cj(self) -> Self{
+        self.conj()
+    }
+    fn eps() -> Self::RealPart {
+        f32::EPSILON
+    }
+    fn mag(self) -> Self::RealPart {
+        self.norm()
+    }
+    fn tol() -> Self::RealPart {
+        2e-5
+    }
 }
 
 impl LinxalScalar for c64 {
     type RealPart = f64;
+
+    fn cj(self) -> Self{
+        self.conj()
+    }
+    fn eps() -> Self::RealPart {
+        f64::EPSILON
+    }
+    fn mag(self) -> Self::RealPart {
+        self.norm()
+    }
+    fn tol() -> Self::RealPart {
+        4e-14
+    }
 }
 
 
@@ -125,7 +165,7 @@ impl LinxalScalar for c64 {
 pub trait LinxalFloat: LinxalScalar + Float {}
 impl<T: LinxalScalar + Float> LinxalFloat for T {}
 
-/// Scalars that are also (real) floats.
+/// Scalars that are also complex floats.
 pub trait LinxalComplex: LinxalScalar {}
 impl LinxalComplex for c32 {}
 impl LinxalComplex for c64 {}
