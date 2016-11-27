@@ -117,7 +117,11 @@ impl <T: MG> GenerateArgs<T> {
 
         let mut values = match self.values {
             ValuesOption::EvenUniform(a, b) => {
-                let mut vs = Array::linspace(a, b, ns - nonzero_entries).into_raw_vec();
+                let mut vs = if nonzero_entries >= 1 {
+                    Array::linspace(a, b, ns - nonzero_entries).into_raw_vec()
+                } else {
+                    vec![(a+b) * 0.5.into()]
+                };
                 vs.resize(ns, T::RealPart::zero());
                 vs
             },
@@ -134,7 +138,7 @@ impl <T: MG> GenerateArgs<T> {
 
         // Take the absolute value for positive or non-symmetric
         // matrices.
-        if self.symmetry == GenerateSymmetry::Positive {
+        if self.symmetry != GenerateSymmetry::Symmetric {
             for x in values.iter_mut() {
                 *x = x.abs();
             }
@@ -147,7 +151,8 @@ impl <T: MG> GenerateArgs<T> {
 macro_rules! impl_mat_gen {
     ($impl_type:ty, $gen_gen:ident, $ortho_gen:ident) => (
         impl MG for $impl_type {
-            fn general(gen: &mut GenerateArgs<Self>) -> Result<Array<Self, Ix2>, GenerateError> {
+            fn general(gen: &mut GenerateArgs<Self>)
+                       -> Result<(Array<Self, Ix2>, Vec<Self::RealPart>), GenerateError> {
                 /// Validate the option inputs.
                 try!(gen.validate());
 
@@ -172,13 +177,10 @@ macro_rules! impl_mat_gen {
                 };
 
                 match info {
-                    0 => Ok(arr),
+                    0 => Ok((arr, values)),
                     -1 => Err(GenerateError::NotSquare),
-                    -2 | -3 | -5 | -7 | -8 | -10 | -12 | -14 => unreachable!(),
-                    -11 => Err(GenerateError::BadUpperBand),
-                    1 => Err(GenerateError::EigenvalueGeneration),
-                    2 => Err(GenerateError::EigenvalueScale),
-                    3 => Err(GenerateError::RawMatrixGeneration),
+                    -2 | -3 | -5 | -7 | -8 | -10 | -11 | -12 | -14 => unimplemented!(),
+                    1 | 2 | 3 => unreachable!(),
                     _ => unreachable!()
                 }
             }

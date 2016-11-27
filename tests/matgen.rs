@@ -1,12 +1,17 @@
 #[macro_use]
 extern crate linxal;
+
+#[macro_use]
+extern crate itertools;
+
 extern crate rand;
 extern crate ndarray;
 
 use ndarray::prelude::*;
 use linxal::generate::{MG, RandomGeneral, RandomUnitary};
 use linxal::types::{c32, c64};
-use linxal::properties::{is_unitary, is_diagonal};
+use linxal::properties::{is_unitary, is_diagonal,
+                         get_lower_bandwidth_tol, get_upper_bandwidth_tol};
 use rand::thread_rng;
 
 fn test_gen_unitary<T: MG> () {
@@ -67,3 +72,32 @@ fn test_gen_diagonal_c64() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+/// Ensures that lower and upper bandwidth call is honored
+fn test_gen_bands<T: MG> () {
+    for (r, c) in iproduct!(1..10, 1..10) {
+        for (l, u) in iproduct!(0..r, 0..c) {
+            let m: Array<T, Ix2> = RandomGeneral::new(r, c, &mut thread_rng()).bands(l, u).generate().ok().unwrap();
+            println!("{:?}", m);
+            assert!(get_lower_bandwidth_tol(&m, 0.0) <= l);
+            assert!(get_upper_bandwidth_tol(&m, 0.0) <= u);
+        }
+    }
+}
+
+#[test]
+fn test_gen_bands_f32() {
+    test_gen_bands::<f32>();
+}
+#[test]
+fn test_gen_bands_f64() {
+    test_gen_bands::<f64>();
+}
+#[test]
+fn test_gen_bands_c32() {
+    test_gen_bands::<c32>();
+}
+#[test]
+fn test_gen_bands_c64() {
+    test_gen_bands::<c64>();
+}
