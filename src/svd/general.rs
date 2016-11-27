@@ -1,13 +1,13 @@
 //! Solve singular value decomposition (SVD) of arbitrary matrices.
 
 use lapack::c::{sgesvd, sgesdd, dgesvd, dgesdd, cgesvd, cgesdd, zgesvd, zgesdd};
-use super::types::{SVDSolution, SVDError, SingularValue};
+use super::types::{SVDSolution, SVDError};
 use impl_prelude::*;
 
 const SVD_NORMAL_LIMIT: usize = 200;
 
 /// Trait for scalars that can implement SVD.
-pub trait SVD<SV: SingularValue>: LinxalScalar {
+pub trait SVD: LinxalScalar {
     /// Compute the singular value decomposition of a matrix.
     ///
     /// Use `Self::compute` when you don't wnat to consume the input
@@ -21,7 +21,7 @@ pub trait SVD<SV: SingularValue>: LinxalScalar {
     fn compute_into<D>(mat: ArrayBase<D, Ix2>,
                        compute_u: bool,
                        compute_vt: bool)
-                      -> Result<SVDSolution<Self, SV>, SVDError>
+                      -> Result<SVDSolution<Self>, SVDError>
         where D: DataMut<Elem = Self> + DataOwned<Elem = Self>;
 
     /// Comptue the singular value decomposition of a matrix.
@@ -32,7 +32,7 @@ pub trait SVD<SV: SingularValue>: LinxalScalar {
     fn compute<D>(mat: &ArrayBase<D, Ix2>,
                   compute_u: bool,
                   compute_vt: bool)
-                  -> Result<SVDSolution<Self, SV>, SVDError>
+                  -> Result<SVDSolution<Self>, SVDError>
         where D: Data<Elem = Self>
     {
         let vec: Vec<Self> = mat.iter().cloned().collect();
@@ -69,13 +69,13 @@ fn select_svd_method(d: &Ix2, compute_either: bool) -> SVDMethod {
 
 
 macro_rules! impl_svd {
-    ($impl_type:ident, $sv_type:ident, $svd_func:ident, $sdd_func:ident) => (
-        impl SVD<$sv_type> for $impl_type {
+    ($impl_type:ident, $svd_func:ident, $sdd_func:ident) => (
+        impl SVD for $impl_type {
 
             fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
                                mut compute_u: bool,
                                mut compute_vt: bool)
-                               -> Result<SVDSolution<$impl_type, $sv_type>, SVDError>
+                               -> Result<SVDSolution<$impl_type>, SVDError>
                 where D: DataMut<Elem=Self> + DataOwned<Elem = Self>{
 
                 let (m, n) = mat.dim();
@@ -143,7 +143,7 @@ macro_rules! impl_svd {
     )
 }
 
-impl_svd!(f32, f32, sgesvd, sgesdd);
-impl_svd!(f64, f64, dgesvd, dgesdd);
-impl_svd!(c32, f32, cgesvd, cgesdd);
-impl_svd!(c64, f64, zgesvd, zgesdd);
+impl_svd!(f32, sgesvd, sgesdd);
+impl_svd!(f64, dgesvd, dgesdd);
+impl_svd!(c32, cgesvd, cgesdd);
+impl_svd!(c64, zgesvd, zgesdd);

@@ -1,36 +1,24 @@
-use ndarray::prelude::*;
-use super::super::types::LinxalFloat;
-use num_traits::{ToPrimitive};
-use std::fmt::Display;
-
-/// Trait for singular values
-///
-/// A type implementing `SingularValue` can be returned as a singular
-/// value by `SVD::compute*`.
-pub trait SingularValue: LinxalFloat + Display + ToPrimitive {}
-
-impl<T: LinxalFloat + Display + ToPrimitive> SingularValue for T {}
-
+use impl_prelude::*;
 
 /// A solution to the singular value decomposition.
 ///
 /// A singular value decomposition solution includes singular values
 /// and, optionally, the left and right singular vectors, stored as a
 /// mtrix.
-pub struct SVDSolution<IV: Sized, SV: Sized> {
+pub struct SVDSolution<T: LinxalScalar> {
     /// Singular values of the matrix.
     ///
     /// Singular values, which are guaranteed to be non-negative
     /// reals, are returned in descending order.
-    pub values: Array<SV, Ix1>,
+    pub values: Array<T::RealPart, Ix1>,
 
     /// The matrix `U` of left singular vectors.
-    pub left_vectors: Option<Array<IV, Ix2>>,
+    pub left_vectors: Option<Array<T, Ix2>>,
 
     /// The matrix V^t of singular vectors.
     ///
     /// The transpose of V is stored, not V itself.
-    pub right_vectors: Option<Array<IV, Ix2>>,
+    pub right_vectors: Option<Array<T, Ix2>>,
 }
 
 /// An error resulting from a `SVD::compute*` method.

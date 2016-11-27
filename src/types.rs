@@ -165,7 +165,7 @@ impl LinxalScalar for c64 {
 pub trait LinxalFloat: LinxalScalar + Float {}
 impl<T: LinxalScalar + Float> LinxalFloat for T {}
 
-/// Scalars that are also (real) floats.
+/// Scalars that are also complex floats.
 pub trait LinxalComplex: LinxalScalar {}
 impl LinxalComplex for c32 {}
 impl LinxalComplex for c64 {}
