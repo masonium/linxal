@@ -1,3 +1,10 @@
+0.4.0:
+ - matrix generation API (`RandomGeneral`, `RandomPositive`, `RandomSymmetric`, `RandomUnitary`)
+ - matrix properties (`is_*` tests, bandwidth check)
+ - restructured `LinxalScalar` (additional traits, remove `Magnitude` trait)
+ - simplify `SymEigen` (no associated types, real part inferred from `Self`)
+ - simplify `SVD` (no associated types, no generic parameter, real part inferred from `Self`)
+
 0.3.0:
  - Add QR and LU factorizations in `factorization` module
  - Add matrix row permutation module `permute`, to facilitate LU-factorization
