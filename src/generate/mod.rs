@@ -1,8 +1,12 @@
+//! Generate random matrices.
+
+#![deny(missing_docs)]
+
+
 mod ffi;
 mod internal;
 mod types;
 pub mod matgen;
-pub mod semipositive;
 
 pub use self::types::{Packing, GenerateError};
-pub use self::matgen::{MG, RandomUnitary, RandomSemiPositive, RandomGeneral};
+pub use self::matgen::{MG, RandomUnitary, RandomSemiPositive, RandomSymmetric, RandomGeneral};

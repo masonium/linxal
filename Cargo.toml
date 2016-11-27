@@ -26,6 +26,9 @@ num-traits = "0.1"
 rand = "0.3"
 libc = "0.2"
 
+[dev-dependencies]
+itertools = "0.5"
+
 [dependencies.lapack]
 version = "0.11"
 default-features = false

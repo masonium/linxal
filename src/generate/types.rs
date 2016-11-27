@@ -1,46 +1,47 @@
+//! Types for inputs and outputs in matrix-generating functions.
+
 use impl_prelude::*;
 use rand::{Rng};
 
+/// The packing type for a generated matrix.
+///
+/// For symmetric matrices,, the result can sometimes be
 #[repr(u8)]
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Packing {
+    /// All of the entries of the matrix will be returned.
     Full = b'N',
+
+    /// Only the upper triangular portion of the matrix is filled in,
+    /// with the rest as zeros.
     UpperOnly = b'U',
+
+    /// Only the lower triangular portion of the matrix is filled in,
+    /// with the rest as zeros.
     LowerOnly = b'L'
 }
 
-pub enum ValuesOption<T> {
-    EvenUniform(T, T),
-    Exact(Vec<T>)
-}
-
-#[repr(u8)]
-#[derive(PartialEq, Eq, Clone, Copy)]
-pub enum GenerateSymmetry {
-    Positive = b'P',
-    Symmetric = b'H',
-    NoSymmetry = b'N'
-}
-
+/// Errors when attempting to generate a random matrix.
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum GenerateError {
+    /// The matrix doesn't have square dimensions, but a square
+    /// dimension is required for a certain operation.
     NotSquare,
 
-    // Incorrect number of eigenvalues or singular values
+    /// Incorrect number of eigenvalues or singular values
     NotEnoughValues,
 
-    // Rank
+    /// The matrix is square, but the number of bands is not the same
+    /// on both sides.
+    UnequalBands,
+
+    /// The matrix is not symmetric, but a non-`Full` packing was used.
+    InvalidPacking,
+
+    /// The rank is larger than the size of the matrix can support.
     InvalidRank,
 
-    UnequalBands,
-    BadUpperBand,
-
-    /// The packing does not match the shape of the matrix.
-    InvalidPacking,
-    EigenvalueGeneration,
-    EigenvalueScale,
-    RawMatrixGeneration,
-
+    /// Invalid Parameter
     IllegalParameter(i32),
 }
 
