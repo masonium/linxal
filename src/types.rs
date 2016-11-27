@@ -72,11 +72,12 @@ impl From<LUError> for Error {
     }
 }
 
-/// Common traits for matrix operations, as well as conjugation
+/// Trait for matrix operations and utilities, including conjugation and magnitude.
 ///
-///
+/// This trait is unifies most required operations for real and
+/// complex scalars.
 pub trait LinxalScalar: Sized + Clone + Debug + Display + Zero + One + Sub<Output=Self> + LinalgScalar {
-    type RealPart: Float + NumCast + From<f32> + Debug + Display + SampleRange;
+    type RealPart: LinxalScalar + Float + NumCast + From<f32> + SampleRange;
 
     /// Return the conjugate of the value.
     fn cj(self) -> Self;
