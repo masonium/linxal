@@ -4,6 +4,7 @@ use ndarray::LinalgScalar;
 use eigenvalues::types::EigenError;
 use solve_linear::types::SolveError;
 use least_squares::LeastSquaresError;
+use generate::GenerateError;
 use factorization::qr::QRError;
 use factorization::lu::LUError;
 use std::ops::Sub;
@@ -34,6 +35,7 @@ pub enum Error {
     SolveLinear(SolveError),
     QR(QRError),
     LU(LUError),
+    Generate(GenerateError),
 }
 
 impl From<SVDError> for Error {
@@ -69,6 +71,12 @@ impl From<QRError> for Error {
 impl From<LUError> for Error {
     fn from(e: LUError) -> Error {
         Error::LU(e)
+    }
+}
+
+impl From<GenerateError> for Error {
+    fn from(e: GenerateError) -> Error {
+        Error::Generate(e)
     }
 }
 

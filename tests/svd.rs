@@ -7,7 +7,7 @@ extern crate lapack;
 use ndarray::{Array, Ix2};
 use linxal::svd::{SVD};
 use linxal::types::{LinxalScalar, c32, c64};
-use num_traits::{One, Zero};
+use num_traits::{One};
 
 /// Identity matrix SVD
 pub fn svd_test_identity<T: SVD>() {

@@ -13,7 +13,6 @@ use linxal::generate::{MG, RandomSymmetric};
 use linxal::eigenvalues::{SymEigen};
 use linxal::types::{c32, c64, Symmetric, LinxalScalar};
 use linxal::properties::{is_symmetric};
-use num_traits::{One};
 use rand::thread_rng;
 
 fn test_gen_symmetric<T: MG> () {
