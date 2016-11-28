@@ -116,11 +116,11 @@ fn main() {
   - [X] General (direct via `ndarray`)
   - [ ] Symmetric / Hermitian
   - [ ] Banded (Packed)
-- [ ] Random matrix generation
-  - [ ] General
-  - [ ] Symmetric / Hermitian
-  - [ ] Positive
-  - [ ] Unitary
+- [X] Random matrix generation
+  - [X] General
+  - [X] Symmetric / Hermitian
+  - [X] Positive
+  - [X] Unitary
 
 ## Contributing ##
 Pull requests of all kinds (code, documentation, formatting, spell-checks) are welcome!
