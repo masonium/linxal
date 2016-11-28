@@ -2,8 +2,7 @@
 
 ## Status ##
 [![Crate Version](https://img.shields.io/crates/v/linxal.svg)](https://crates.io/crates/linxal)
-[![Build Status](https://travis-ci.org/masonium/linxal.svg?branch=master)](https://travis-ci.org/masonium/linxal)
-
+[![Build Status](https://travis-ci.org/masonium/linxal.svg?branch=master)](https://travis-ci.org/masonium/linxal) [![Documentation](https://docs.rs/linxal/badge.svg)](https://docs.rs/linxal)
 
 ## Description ##
 
