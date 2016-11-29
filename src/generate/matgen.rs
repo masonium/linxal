@@ -338,6 +338,12 @@ impl <T: MG> RandomSemiPositive<T> {
     pub fn generate(&mut self) -> Result<Array<T, Ix2>, GenerateError> {
         MG::general(&mut self.args).map(|x| x.0)
     }
+
+    /// Generate a matrix matching the specifications, and singular values
+    pub fn generate_with_sv(&mut self) -> Result<(Array<T, Ix2>, Array<T::RealPart, Ix1>), GenerateError> {
+        MG::general(&mut self.args)
+    }
+
 }
 
 /// Structure for creating symmetric matrices.
@@ -509,10 +515,24 @@ impl <T: MG> RandomGeneral<T> {
     ///
     /// If the band is larger than the matrix, it is interpreted as a
     /// full-sized matrix.
+    #[deprecated]
     pub fn bands(&mut self, lower: usize, upper: usize) -> &mut Self {
         self.args.bands = Some((lower, upper));
         self
     }
+
+    /// Make the returned matrix upper-triangular or upper-trapezoidal.
+    pub fn upper(&mut self) -> &mut Self {
+        self.args.bands = Some((0, self.args.n));
+        self
+    }
+
+    /// Make the returned matrix lower-triangular or lower-trapezoidal.
+    pub fn lower(&mut self) -> &mut Self {
+        self.args.bands = Some((self.args.m, 0));
+        self
+    }
+
 
     /// Set the matrix to be full bandwidth.
     pub fn full_bands(&mut self) -> &mut Self {
