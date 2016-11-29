@@ -1,3 +1,10 @@
+0.4.2:
+ - Cholesky factorization
+ - depcrecated `RandomGeneral::bands` due to possible `?latmt` bug
+
+0.4.1:
+ - Add `GenerateError` option to `LinxalError`
+
 0.4.0:
  - matrix generation API (`RandomGeneral`, `RandomPositive`, `RandomSymmetric`, `RandomUnitary`)
  - matrix properties (`is_*` tests, bandwidth check)
