@@ -108,6 +108,32 @@ pub fn is_unitary<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> 
     is_unitary_tol(mat, default_tol(mat))
 }
 
+/// Return true iff the matrix is triangular / trapezoidal, with the
+/// side specified by `uplo`.
+pub fn is_triangular_tol<T, D, F>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric, tolerance: F)
+                                  -> bool
+    where T: LinxalScalar,
+          D: Data<Elem=T>,
+          F: Into<T::RealPart> {
+
+    match uplo {
+        Symmetric::Upper => get_lower_bandwidth_tol(mat, tolerance) == 0,
+        Symmetric::Lower => get_upper_bandwidth_tol(mat, tolerance) == 0
+    }
+}
+
+/// Return true iff the matrix is triangular / trapezoidal, with the
+/// side specified by `uplo`.
+///
+/// Uses the defalut toleranace for comparisons to 0.
+pub fn is_triangular<T, D>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric)
+                                  -> bool
+    where T: LinxalScalar,
+          D: Data<Elem=T> {
+
+    is_triangular_tol(mat, uplo, default_tol(&mat))
+}
+
 /// Return the lower bandwidth of the matrix, within the specified
 /// tolerance.
 ///

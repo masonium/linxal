@@ -1,4 +1,5 @@
 use impl_prelude::*;
+use std::cmp::Ordering;
 
 /// Assert that two ndarrays are logically equivalent, within
 /// tolerance.
@@ -33,4 +34,32 @@ macro_rules! assert_eq_within_tol {
 /// Return the conjugate transpose of a matrix.
 pub fn conj_t<T: LinxalScalar, D: Data<Elem=T>>(a: &ArrayBase<D, Ix2>) -> Array<T, Ix2> {
     a.t().mapv(|x| x.cj())
+}
+
+/// Force a matrix to be triangular or trapezoidal, by zero-ing out
+/// the other elements.
+pub fn make_triangular_into<T, D>(mut a: ArrayBase<D, Ix2>, uplo: Symmetric)
+                                  -> ArrayBase<D, Ix2>
+    where T: LinxalScalar,
+          D: DataMut<Elem=T> + DataOwned<Elem=T> {
+    let order = match uplo {
+        Symmetric::Upper => Ordering::Greater,
+        Symmetric::Lower => Ordering::Less
+    };
+    for (i, x) in a.indexed_iter_mut() {
+        if i.0.cmp(&i.1) == order {
+            *x = T::zero();
+        }
+    }
+
+    a
+}
+
+/// Force a matrix to be triangular or trapezoidal, by zero-ing out
+/// the other elements.
+pub fn make_triangular<T, D>(a: ArrayBase<D, Ix2>, uplo: Symmetric)
+                             -> Array<T, Ix2>
+    where T: LinxalScalar,
+          D: Data<Elem=T> {
+    make_triangular_into(a.to_owned(), uplo)
 }

@@ -184,8 +184,6 @@ macro_rules! impl_qr {
                      tau)
                 };
 
-                println!("{:?}\n {:?}\n", a, tau);
-
                 if info == 0 {
                     QRFactors::from_raw(a, tau)
                 } else if info < 0 {

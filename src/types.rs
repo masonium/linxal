@@ -1,12 +1,13 @@
 //! Globally-used traits, structs, and enums
-use svd::types::SVDError;
 use ndarray::LinalgScalar;
+use svd::types::SVDError;
 use eigenvalues::types::EigenError;
 use solve_linear::types::SolveError;
 use least_squares::LeastSquaresError;
 use generate::GenerateError;
 use factorization::qr::QRError;
 use factorization::lu::LUError;
+use factorization::cholesky::CholeskyError;
 use std::ops::Sub;
 use std::fmt::{Debug, Display};
 use num_traits::{Float, Zero, One, NumCast};
@@ -16,6 +17,7 @@ pub use lapack::{c32, c64};
 
 /// Enum for symmetric matrix inputs.
 #[repr(u8)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Symmetric {
     /// Read elements from the upper-triangular portion of the matrix
     Upper = b'U',
@@ -35,6 +37,7 @@ pub enum Error {
     SolveLinear(SolveError),
     QR(QRError),
     LU(LUError),
+    Cholesky(CholeskyError),
     Generate(GenerateError),
 }
 
@@ -74,6 +77,12 @@ impl From<LUError> for Error {
     }
 }
 
+impl From<CholeskyError> for Error {
+    fn from(e: CholeskyError) -> Error {
+        Error::Cholesky(e)
+    }
+}
+
 impl From<GenerateError> for Error {
     fn from(e: GenerateError) -> Error {
         Error::Generate(e)
@@ -84,7 +93,7 @@ impl From<GenerateError> for Error {
 ///
 /// This trait is unifies most required operations for real and
 /// complex scalars.
-pub trait LinxalScalar: Sized + Clone + Debug + Display + Zero + One + Sub<Output=Self> + LinalgScalar {
+pub trait LinxalScalar: Sized + Default + Clone + Debug + Display + Zero + One + Sub<Output=Self> + LinalgScalar {
     type RealPart: LinxalScalar + Float + NumCast + From<f32> + SampleRange;
 
     /// Return the conjugate of the value.
