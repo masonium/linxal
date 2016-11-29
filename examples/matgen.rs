@@ -12,17 +12,12 @@ fn generate_general() {
 
     let mut generator: RandomGeneral<f32> =  RandomGeneral::new(3, 3, &mut rng);
 
-    generator.rank(2).bands(1, 2);
-    println!("Rank 2, (1, 2) - banded matrix");
-    println!("{:?}", generator.generate().unwrap());
-    println!("{:?}", generator.generate().unwrap());
-    println!("---");
     generator.full_rank().full_bands();
     println!("Full rank, full-banded matrix");
     println!("{:?}", generator.generate().unwrap());
     println!("{:?}", generator.generate().unwrap());
     println!("---");
-    generator.bands(0, 0).sv_random_uniform(1.0, 4.0);
+    generator.diagonal().sv_random_uniform(1.0, 4.0);
     println!("Diagnoal matrix with random singular values");
     println!("{:?}", generator.generate().unwrap());
     let (g, v) = generator.generate_with_sv().unwrap();

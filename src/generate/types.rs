@@ -47,12 +47,12 @@ pub enum GenerateError {
 
 /// Create a new seed for matrix generation.
 pub fn new_seed<Rand: Rng>(rng: &mut Rand) -> [i32; 4] {
-    [rng.gen::<u16>() as i32, rng.gen::<u16>() as i32,
-     rng.gen::<u16>() as i32, rng.gen::<u16>() as i32 * 2 + 1]
+    [rng.gen::<u16>() as i32 % 4096, rng.gen::<u16>() as i32 % 4096,
+     rng.gen::<u16>() as i32 % 4096, (rng.gen::<u16>() as i32 * 2 + 1) % 4096]
 }
 
 /// Create a new workspace for the matrix generating function based on
 /// the size of the matrix.
-pub fn new_workspace<T>(m: usize, n: usize) -> Vec<T> {
-    Vec::with_capacity(cmp::max(m, n) * 3)
+pub fn new_workspace<T: LinxalScalar>(m: usize, n: usize) -> Array<T, Ix1> {
+    Array::default(cmp::max(m, n) * 3)
 }

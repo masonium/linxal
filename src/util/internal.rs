@@ -1,3 +1,4 @@
+use impl_prelude::LinxalScalar;
 use ndarray::prelude::*;
 use ndarray::{Data, DataMut};
 use lapack::c::Layout;
@@ -7,7 +8,7 @@ use std::slice;
 ///
 /// This function is used internally to ensure that the matrix outputs
 /// are created to be compatible with the matrix input.
-pub fn matrix_with_layout<T: Default, Sh>(d: Sh, layout: Layout)
+pub fn matrix_with_layout<T: LinxalScalar, Sh>(d: Sh, layout: Layout)
                                           -> Array<T, Ix2>
     where Sh: ShapeBuilder<Dim=Ix2> {
     let shape = match layout {

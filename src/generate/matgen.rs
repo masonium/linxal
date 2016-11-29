@@ -51,11 +51,10 @@ pub struct GenerateArgs<T: MG> {
     packing: Packing,
 
     seed: [i32; 4],
-    workspace: Vec<T>,
+    workspace: Array<T, Ix1>,
 }
 
 impl <T: MG> GenerateArgs<T> {
-
     /// Returns the desired rank of the output matrix.
     pub fn rank(&self) -> usize {
         let k = cmp::min(self.m, self.n);
@@ -111,31 +110,34 @@ impl <T: MG> GenerateArgs<T> {
     /// symmetry.
     fn values(&self) -> Result<Array<T::RealPart, Ix1>, GenerateError> {
         let ns = cmp::min(self.m, self.n);
-        let nonzero_entries = match self.rank {
-            None => 0,
-            Some(k) => if k > ns { return Err(GenerateError::InvalidRank) } else { ns - k }
+
+        let nz = match self.rank {
+            None => ns,
+            Some(k) => if k > ns { return Err(GenerateError::InvalidRank) } else { k }
         };
 
         // Create the non-zero entries based on the ValuesOption
         let mut values = match self.values {
             ValuesOption::EvenUniform(a, b) => {
-                if nonzero_entries >= 1 {
-                    Array::linspace(a, b, ns - nonzero_entries).into_raw_vec()
-                } else {
+                if nz > 1 {
+                    Array::linspace(a, b, nz).into_raw_vec()
+                } else if nz == 1 {
                     vec![(a+b) * 0.5.into()]
+                } else {
+                    Vec::new()
                 }
             },
             ValuesOption::RandomUniform(a, b) => {
                 let mut rng = thread_rng();
                 let range = Range::new(a, b);
-                (0..nonzero_entries).map(|_| range.ind_sample(&mut rng)).collect()
+                (0..nz).map(|_| range.ind_sample(&mut rng)).collect()
             }
             ValuesOption::Exact(ref v) => {
-                if v.len() < nonzero_entries {
+                if v.len() < nz {
                     return Err(GenerateError::NotEnoughValues);
                 }
                 let mut vs = v.clone();
-                vs.resize(nonzero_entries, T::RealPart::zero());
+                vs.resize(nz, T::RealPart::zero());
                 vs
             }
         };
@@ -167,6 +169,8 @@ macro_rules! impl_mat_gen {
 
                 let mut values = try!(gen.values());
 
+                assert!(values.len() >= cmp::min(gen.m, gen.n));
+
                 let dist = b'U'; // we always proved values, so this is irrelevant.
                 let mode = 0;
 
@@ -180,7 +184,7 @@ macro_rules! impl_mat_gen {
                              1.0, 1.0,
                              gen.rank.unwrap_or(cmp::min(gen.m, gen.n)) as i32,
                              kl as i32, ku as i32, gen.packing as u8,
-                             slice, lda as i32, &mut gen.workspace)
+                             slice, lda as i32, gen.workspace.as_slice_mut().unwrap())
                 };
 
                 match info {
@@ -201,7 +205,7 @@ macro_rules! impl_mat_gen {
                 {
                     let (slice, _, lda) = slice_and_layout_mut(&mut arr).unwrap();
                     $ortho_gen(b'L', b'I', gen.m as i32, gen.n as i32,
-                               slice, lda as i32, &mut gen.seed, &mut gen.workspace,
+                               slice, lda as i32, &mut gen.seed, gen.workspace.as_slice_mut().unwrap(),
                                &mut info);
                 }
 
