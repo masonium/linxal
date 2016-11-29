@@ -25,6 +25,7 @@ pub enum EigenError {
 /// Contains thte eigenvalues and, optionally, the left and/or right
 /// eigenvectors of the solution. For symmetric problems, the
 /// eigenvectors are placed in `right_eigenvectors`.
+#[derive(Debug)]
 pub struct Solution<IV, EV> {
     /// Eigenvalues of the matrix.
     pub values: Array<EV, Ix1>,
