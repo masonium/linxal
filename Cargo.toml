@@ -1,6 +1,6 @@
 [package]
 name = "linxal"
-version = "0.4.2"
+version = "0.5.0"
 authors = ["Mason Smith <masonium@gmail.com>"]
 
 description = "Linear Algebra package with rust-ndarray interface"
@@ -21,7 +21,7 @@ openblas-system = ["blas/openblas", "lapack/openblas", "openblas-src/system"]
 netlib-system = ["blas/netlib", "lapack/netlib", "netlib-src/system"]
 
 [dependencies]
-ndarray = "0.7"
+ndarray = "0.8"
 num-traits = "0.1"
 rand = "0.3"
 libc = "0.2"
