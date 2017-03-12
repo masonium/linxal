@@ -16,7 +16,7 @@
 //! ```text
 //! [dependencies]
 //! ...
-//! linxal = "0.4"
+//! linxal = "0.5"
 //! ```
 //!
 //! In your `lib.rs` or `main.rs` file, use
