@@ -19,7 +19,7 @@ pub trait Eigen: Sized + Clone {
     ///
     /// The entries in the input matrix `mat` are modified when
     /// calculating the eigenvalues.
-    fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
+    fn compute_into<D>(mat: ArrayBase<D, Ix2>,
                        compute_left: bool,
                        compute_right: bool)
                        -> Result<Self::Solution, EigenError>
