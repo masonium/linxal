@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate linxal;
 
-#[macro_use]
 extern crate ndarray;
 extern crate num_traits;
 extern crate rand;

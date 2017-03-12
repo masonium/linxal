@@ -1,9 +1,7 @@
 #[macro_use]
 extern crate linxal;
 
-#[macro_use]
 extern crate itertools;
-
 extern crate num_traits;
 extern crate rand;
 extern crate ndarray;

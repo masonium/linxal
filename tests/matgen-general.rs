@@ -1,7 +1,5 @@
-#[macro_use]
 extern crate linxal;
 
-#[macro_use]
 extern crate itertools;
 
 extern crate rand;

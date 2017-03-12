@@ -96,6 +96,7 @@ macro_rules! impl_eigen_real {
 impl_eigen_real!(f32, c32, sgeev);
 impl_eigen_real!(f64, c64, dgeev);
 
+/// Macro for implementing the Eigen trait on complex-valued matrices.
 macro_rules! impl_eigen_complex {
     ($impl_type:ident, $func:ident)  => (
         impl Eigen for $impl_type {
