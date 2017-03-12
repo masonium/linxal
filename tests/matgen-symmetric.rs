@@ -40,7 +40,7 @@ fn test_gen_symmetric_c64() {
     test_gen_symmetric::<c64>();
 }
 
-fn symmetric_with_gen_eigenvalues<T: MG + SymEigen>() {
+fn symmetric_with_gen_eigenvalues<T: LinxalScalar>() {
     for t in 1..21 {
         let pair: (Array<T, Ix2>, Array<T::RealPart, Ix1>) = RandomSymmetric::new(t, &mut thread_rng()).ev_random_uniform(-5.0, 5.0)
             .generate_with_ev().ok().unwrap();
