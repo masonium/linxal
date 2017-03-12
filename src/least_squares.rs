@@ -68,9 +68,9 @@ pub trait LeastSquares: Sized + Clone {
         Self::compute_multi_full_into(a.to_owned(), b.to_owned())
     }
 
-    /// Returns the solution `x` to the least squares problem min(||A*x - b||), for any `A`.
+    /// Similar to `compute_multi_degenerate_into`, but doesn't modify the inputs.
     ///
-    /// The matrix `a` can possibly be degenerate.
+    /// See [compute_multi_degenerate_into]().
     fn compute_multi_degenerate<D1, D2>
         (a: &ArrayBase<D1, Ix2>,
          b: &ArrayBase<D2, Ix2>)
@@ -81,7 +81,9 @@ pub trait LeastSquares: Sized + Clone {
         Self::compute_multi_degenerate_into(a.to_owned(), b.to_owned())
     }
 
-    /// Similar to `compute_multi_degenerate_into`, but doesn't modify the inputs.
+    /// Returns the solution `x` to the least squares problem min(||A*x - b||), for any `A`.
+    ///
+    /// The matrix `a` can possibly be degenerate.
     fn compute_multi_degenerate_into<D1, D2>
         (a: ArrayBase<D1, Ix2>,
          b: ArrayBase<D2, Ix2>)

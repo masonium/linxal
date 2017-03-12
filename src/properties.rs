@@ -11,12 +11,12 @@ use util::conj_t;
 use num_traits::{Float};
 
 /// Return true iff the matrix is square.
-fn is_square_size(d: &Ix2) -> bool {
+pub fn is_square_size(d: &Ix2) -> bool {
     d[0] == d[1]
 }
 
 /// Return the default tolerance used for most property testing.
-fn default_tol<T, D>(mat: &ArrayBase<D, Ix2>)
+pub fn default_tol<T, D>(mat: &ArrayBase<D, Ix2>)
                               -> T::RealPart
     where T: LinxalScalar,
           D: Data<Elem=T> {
@@ -86,7 +86,7 @@ pub fn is_symmetric_tol<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2
 
 /// Return true iff the matrix is unitary, within tolerance.
 ///
-/// A unitary matrix U is a square matrix taht satisfiies
+/// A unitary matrix U is a square matrix that satisfiies
 ///
 /// $$U^H\ cdot U = U \cdot U^H = I$$
 ///

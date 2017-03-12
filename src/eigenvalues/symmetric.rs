@@ -12,9 +12,6 @@ use impl_prelude::*;
 /// In order to extract eigenvalues or eigenvectors from a matrix,
 /// that matrix with must have  entries implementing the `Eigen` trait.
 pub trait SymEigen: LinxalScalar {
-    /// Solution type for the symmetric eigenvalue problem.
-    type Solution;
-
     /// Return the real eigenvalues of a symmetric matrix.
     ///
     /// If `with_vectors` is true, the right eigenvectors of 'V' are
@@ -42,15 +39,13 @@ pub trait SymEigen: LinxalScalar {
     fn compute<D>(mat: &ArrayBase<D, Ix2>,
                   uplo: Symmetric,
                   with_vectors: bool)
-                  -> Result<Self::Solution, EigenError>
+                  -> Result<Solution<Self, Self::RealPart>, EigenError>
         where D: Data<Elem = Self>;
 }
 
 macro_rules! impl_sym_eigen {
     ($impl_type:ident, $eigen_type:ident, $func:ident) => (
         impl SymEigen for $impl_type {
-            type Solution = Solution<$impl_type, $eigen_type>;
-
             fn compute_mut<D>(mat: &mut ArrayBase<D, Ix2>, uplo: Symmetric, with_vectors: bool) ->
                 Result<Array<Self::RealPart, Ix1>, EigenError>
                 where D: DataMut<Elem=Self>
