@@ -93,6 +93,9 @@ pub trait LinxalMatrix<F: LinxalScalar> {
     /// Return the singular value decomposition of the matrix.
     fn svd(&self, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<F>, SVDError>;
 
+    /// Return the inverse of the matrix, if it has one.
+    fn inverse(&self) -> Result<Array<F, Ix2>, Error>;
+
     //*** property methods ***//
     /// Returns true iff the matrix is square.
     fn is_square(&self) -> bool;
@@ -200,6 +203,13 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
 
     fn svd(&self, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<F>, SVDError> {
         SVD::compute(self, compute_u, compute_vt)
+    }
+
+    fn inverse(&self) -> Result<Array<F, Ix2>, Error> {
+        match LU::compute(self) {
+            Ok(factors) => factors.inverse_into().map_err(|x| x.into()),
+            Err(lu_error) => Err(lu_error.into())
+        }
     }
 
     fn is_square(&self) -> bool {
