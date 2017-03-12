@@ -1,100 +1,24 @@
-//! Globally-used traits, structs, and enums
-use ndarray::LinalgScalar;
-use svd::types::SVDError;
-use eigenvalues::types::EigenError;
-use solve_linear::types::SolveError;
-use least_squares::LeastSquaresError;
-use generate::GenerateError;
-use factorization::qr::QRError;
-use factorization::lu::LUError;
-use factorization::cholesky::CholeskyError;
-use std::ops::Sub;
+//! Define `LinxalScalar` and related types for abstracting over
+//! scalars that can be used in the various linxal matrix operations.
+
 use std::fmt::{Debug, Display};
+use ndarray::LinalgScalar;
 use num_traits::{Float, Zero, One, NumCast};
-use std::{f32, f64};
+use std::ops::Sub;
 use rand::distributions::range::SampleRange;
-pub use lapack::{c32, c64};
-
-/// Enum for symmetric matrix inputs.
-#[repr(u8)]
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum Symmetric {
-    /// Read elements from the upper-triangular portion of the matrix
-    Upper = b'U',
-
-    /// Read elements from the lower-triangular portion of the matrix
-    Lower = b'L',
-}
-
-/// Universal `linxal` error enum
-///
-/// This enum can be used as a catch-all for errors from `linxal`
-/// computations.
-#[derive(Debug)]
-pub enum Error {
-    SVD(SVDError),
-    Eigen(EigenError),
-    LeastSquares(LeastSquaresError),
-    SolveLinear(SolveError),
-    QR(QRError),
-    LU(LUError),
-    Cholesky(CholeskyError),
-    Generate(GenerateError),
-}
-
-impl From<SVDError> for Error {
-    fn from(e: SVDError) -> Error {
-        Error::SVD(e)
-    }
-}
-
-impl From<EigenError> for Error {
-    fn from(e: EigenError) -> Error {
-        Error::Eigen(e)
-    }
-}
-
-impl From<LeastSquaresError> for Error {
-    fn from(e: LeastSquaresError) -> Error {
-        Error::LeastSquares(e)
-    }
-}
-
-impl From<SolveError> for Error {
-    fn from(e: SolveError) -> Error {
-        Error::SolveLinear(e)
-    }
-}
-
-impl From<QRError> for Error {
-    fn from(e: QRError) -> Error {
-        Error::QR(e)
-    }
-}
-
-impl From<LUError> for Error {
-    fn from(e: LUError) -> Error {
-        Error::LU(e)
-    }
-}
-
-impl From<CholeskyError> for Error {
-    fn from(e: CholeskyError) -> Error {
-        Error::Cholesky(e)
-    }
-}
-
-impl From<GenerateError> for Error {
-    fn from(e: GenerateError) -> Error {
-        Error::Generate(e)
-    }
-}
+use std::{f32, f64};
+use lapack::{c32, c64};
 
 /// Trait for matrix operations and utilities, including conjugation and magnitude.
 ///
 /// This trait is unifies most required operations for real and
 /// complex scalars.
 pub trait LinxalScalar: Sized + Default + Clone + Debug + Display + Zero + One + Sub<Output=Self> + LinalgScalar {
+
+    /// Associated type defining the type of just the real portion of
+    /// the scalar.
+    ///
+    /// For real-type scalars, this type is trivially the type itself.
     type RealPart: LinxalScalar + Float + NumCast + From<f32> + SampleRange;
 
     /// Return the conjugate of the value.
