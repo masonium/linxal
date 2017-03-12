@@ -14,7 +14,7 @@ use num_traits::{Float};
 use generate::types::*;
 
 /// Scalar trait for generating random matrices.
-pub trait MG: LinxalScalar {
+pub trait MG: LinxalImplScalar {
     /// Create a matrix based on the specified arguments.
     fn general(gen: &mut GenerateArgs<Self>) -> Result<(Array<Self, Ix2>, Array<Self::RealPart, Ix1>), GenerateError>;
 
@@ -313,14 +313,14 @@ impl <T: MG> RandomSemiPositive<T> {
     /// generated.
     ///
     /// The absolute value of all entries is taken.
-    pub fn singular_values(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+    pub fn singular_values(&mut self, values: &[<T as LinxalImplScalar>::RealPart]) -> &mut Self {
         self.args.values = ValuesOption::Exact(values.iter().map(|x| x.abs()).collect());
         self
     }
 
     /// Set the singular_values to the specified values.
     #[inline]
-    pub fn sv(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+    pub fn sv(&mut self, values: &[<T as LinxalImplScalar>::RealPart]) -> &mut Self {
         self.singular_values(values)
     }
 
@@ -427,7 +427,7 @@ impl <T: MG> RandomSymmetric<T> {
     /// When the rank of the matrix is specified as `k`, any values
     /// after the `k`th are ignored and set to zero when the matrix is
     /// generated.
-    pub fn eigenvalues(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+    pub fn eigenvalues(&mut self, values: &[<T as LinxalImplScalar>::RealPart]) -> &mut Self {
         self.args.values = ValuesOption::Exact(values.iter().map(|x| x.abs()).collect());
         self
     }
@@ -436,7 +436,7 @@ impl <T: MG> RandomSymmetric<T> {
     ///
     /// Equivalent to the `eigenvalues` function.
     #[inline]
-    pub fn ev(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+    pub fn ev(&mut self, values: &[<T as LinxalImplScalar>::RealPart]) -> &mut Self {
         self.eigenvalues(values)
     }
 
@@ -551,14 +551,14 @@ impl <T: MG> RandomGeneral<T> {
     /// When the rank of the matrix is specified as `k`, any values
     /// after the `k`th are ignored and set to zero when the matrix is
     /// generated.
-    pub fn singular_values(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+    pub fn singular_values(&mut self, values: &[<T as LinxalImplScalar>::RealPart]) -> &mut Self {
         self.args.values = ValuesOption::Exact(values.iter().map(|x| x.abs()).collect());
         self
     }
 
     /// Set the singular_values to the specified values.
     #[inline]
-    pub fn sv(&mut self, values: &[<T as LinxalScalar>::RealPart]) -> &mut Self {
+    pub fn sv(&mut self, values: &[<T as LinxalImplScalar>::RealPart]) -> &mut Self {
         self.singular_values(values)
     }
 

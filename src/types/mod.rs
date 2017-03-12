@@ -15,10 +15,12 @@ pub enum Symmetric {
     Lower = b'L',
 }
 
-pub mod error;
+pub mod impl_scalar;
 pub mod scalar;
+pub mod error;
 pub mod matrix;
 
 pub use self::error::Error;
-pub use self::scalar::LinxalScalar;
-pub use self::matrix::{LinxalMatrixScalar, LinxalMatrix};
+pub use self::impl_scalar::LinxalImplScalar;
+pub use self::scalar::{LinxalScalar, LinxalReal, LinxalComplex};
+pub use self::matrix::{LinxalMatrix};

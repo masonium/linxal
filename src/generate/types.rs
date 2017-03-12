@@ -53,6 +53,6 @@ pub fn new_seed<Rand: Rng>(rng: &mut Rand) -> [i32; 4] {
 
 /// Create a new workspace for the matrix generating function based on
 /// the size of the matrix.
-pub fn new_workspace<T: LinxalScalar>(m: usize, n: usize) -> Array<T, Ix1> {
+pub fn new_workspace<T: LinxalImplScalar>(m: usize, n: usize) -> Array<T, Ix1> {
     Array::default(cmp::max(m, n) * 3)
 }

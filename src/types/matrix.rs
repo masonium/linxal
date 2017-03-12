@@ -4,17 +4,11 @@ use eigenvalues::{self, Eigen, SymEigen};
 use solve_linear::{SolveLinear, SymmetricSolveLinear};
 use least_squares::{LeastSquares, LeastSquaresSolution};
 use super::error::*;
+use super::scalar::LinxalScalar;
 use impl_prelude::*;
 use factorization::{QR, QRFactors, LU, LUFactors, Cholesky};
 use svd::{SVD, SVDSolution};
 use properties::{self, default_tol};
-
-/// Catch-all aggregate trait for computational routines needed by
-/// `LinxalMatrix`.
-pub trait LinxalMatrixScalar: Eigen + SymEigen + SolveLinear + SymmetricSolveLinear +
-    LeastSquares + QR + LU + Cholesky + SVD {}
-impl<T: Eigen + SymEigen + SolveLinear + SymmetricSolveLinear +
-     LeastSquares + QR + LU + Cholesky + SVD> LinxalMatrixScalar for T {}
 
 /// Enum for specifying the rank of the input matrix for least-squares problems.
 pub enum LeastSquaresType {
@@ -27,7 +21,7 @@ pub enum LeastSquaresType {
 
 /// All-encompassing matrix trait, supporting all of the linear
 /// algebra operations defined for any `LinxalScalar`.
-pub trait LinxalMatrix<F: LinxalMatrixScalar> {
+pub trait LinxalMatrix<F: LinxalScalar> {
     /// Compute the eigenvalues of a matrix.
     fn eigenvalues(&self,
                    compute_left: bool,
@@ -125,7 +119,7 @@ pub trait LinxalMatrix<F: LinxalMatrixScalar> {
 
 }
 
-impl<F: LinxalMatrixScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
+impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
     fn eigenvalues(&self,
                    compute_left: bool,
                    compute_right: bool)

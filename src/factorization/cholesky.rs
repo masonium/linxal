@@ -25,7 +25,7 @@ pub enum CholeskyError {
 }
 
 /// Trait defined on scalars to support Cholesky-factorization.
-pub trait Cholesky: LinxalScalar {
+pub trait Cholesky: LinxalImplScalar {
     /// Return a triangular matrix satisfying the Cholesky
     /// factorization, consuming the input.
     ///

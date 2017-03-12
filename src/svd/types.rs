@@ -5,7 +5,7 @@ use impl_prelude::*;
 /// A singular value decomposition solution includes singular values
 /// and, optionally, the left and right singular vectors, stored as a
 /// mtrix.
-pub struct SVDSolution<T: LinxalScalar> {
+pub struct SVDSolution<T: LinxalImplScalar> {
     /// Singular values of the matrix.
     ///
     /// Singular values, which are guaranteed to be non-negative

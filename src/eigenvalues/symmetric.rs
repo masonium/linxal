@@ -11,7 +11,7 @@ use impl_prelude::*;
 ///
 /// In order to extract eigenvalues or eigenvectors from a matrix,
 /// that matrix with must have  entries implementing the `Eigen` trait.
-pub trait SymEigen: LinxalScalar {
+pub trait SymEigen: LinxalImplScalar {
     /// Return the real eigenvalues of a symmetric matrix.
     ///
     /// If `with_vectors` is true, the right eigenvectors of 'V' are

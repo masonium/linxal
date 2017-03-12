@@ -10,41 +10,44 @@ use std::cmp::Ordering;
 ///
 /// # Remarks
 ///
-/// Requires the `linxal::LinxalScalar` trait to be imported.
+/// Requires the `linxal::LinxalImplScalar` trait to be imported.
 /// Arrays with different storage layouts are otherwise considered
 /// equal. Doesn't perform broadcasting.
-
 #[macro_export]
 macro_rules! assert_eq_within_tol {
     ($e1:expr, $e2:expr, $tol:expr) => (
-        match (&$e1, &$e2, &$tol) {
-            (x, y, tolerance) => {
-                assert_eq!(x.dim(), y.dim());
-                let t = *tolerance;
-                for (i, a) in x.indexed_iter() {
-                    if (*a-y[i]).mag() > t {
-                        panic!(format!("Elements at {:?} not within tolerance: |{} - {}| > {}",
-                                       i, a, y[i], tolerance));
+        {
+            use linxal::types::LinxalImplScalar;
+            match (&$e1, &$e2, &$tol) {
+                (x, y, tolerance) => {
+                    assert_eq!(x.dim(), y.dim());
+                    let t = *tolerance;
+                    for (i, a) in x.indexed_iter() {
+                        if (*a-y[i]).mag() > t {
+                            panic!(format!("Elements at {:?} not within tolerance: |{} - {}| > {}",
+                                           i, a, y[i], tolerance));
+                        }
                     }
                 }
             }
-        })
+        }
+    )
 }
 
 /// Return the conjugate transpose of a matrix.
-pub fn conj_t<T: LinxalScalar, D: Data<Elem=T>>(a: &ArrayBase<D, Ix2>) -> Array<T, Ix2> {
+pub fn conj_t<T: LinxalImplScalar, D: Data<Elem = T>>(a: &ArrayBase<D, Ix2>) -> Array<T, Ix2> {
     a.t().mapv(|x| x.cj())
 }
 
 /// Force a matrix to be triangular or trapezoidal, by zero-ing out
 /// the other elements.
-pub fn make_triangular_into<T, D>(mut a: ArrayBase<D, Ix2>, uplo: Symmetric)
-                                  -> ArrayBase<D, Ix2>
-    where T: LinxalScalar,
-          D: DataMut<Elem=T> + DataOwned<Elem=T> {
+pub fn make_triangular_into<T, D>(mut a: ArrayBase<D, Ix2>, uplo: Symmetric) -> ArrayBase<D, Ix2>
+    where T: LinxalImplScalar,
+          D: DataMut<Elem = T> + DataOwned<Elem = T>
+{
     let order = match uplo {
         Symmetric::Upper => Ordering::Greater,
-        Symmetric::Lower => Ordering::Less
+        Symmetric::Lower => Ordering::Less,
     };
     for (i, x) in a.indexed_iter_mut() {
         if i.0.cmp(&i.1) == order {
@@ -57,9 +60,9 @@ pub fn make_triangular_into<T, D>(mut a: ArrayBase<D, Ix2>, uplo: Symmetric)
 
 /// Force a matrix to be triangular or trapezoidal, by zero-ing out
 /// the other elements.
-pub fn make_triangular<T, D>(a: ArrayBase<D, Ix2>, uplo: Symmetric)
-                             -> Array<T, Ix2>
-    where T: LinxalScalar,
-          D: Data<Elem=T> {
+pub fn make_triangular<T, D>(a: ArrayBase<D, Ix2>, uplo: Symmetric) -> Array<T, Ix2>
+    where T: LinxalImplScalar,
+          D: Data<Elem = T>
+{
     make_triangular_into(a.to_owned(), uplo)
 }

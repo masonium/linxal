@@ -18,7 +18,7 @@ pub fn is_square_size(d: &Ix2) -> bool {
 /// Return the default tolerance used for most property testing.
 pub fn default_tol<T, D>(mat: &ArrayBase<D, Ix2>)
                               -> T::RealPart
-    where T: LinxalScalar,
+    where T: LinxalImplScalar,
           D: Data<Elem=T> {
     T::tol() * mat.iter().map(|x| x.mag())
         .fold(T::RealPart::neg_infinity(), |x, y| if x > y { x } else { y })
@@ -26,7 +26,7 @@ pub fn default_tol<T, D>(mat: &ArrayBase<D, Ix2>)
 }
 
 /// Returns true iff the matrix is diagonal.
-pub fn is_diagonal<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> bool {
+pub fn is_diagonal<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> bool {
     is_diagonal_tol(mat, default_tol(mat))
 }
 
@@ -35,7 +35,7 @@ pub fn is_diagonal<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) ->
 /// The input matrix need not be square to be diagonal.
 pub fn is_diagonal_tol<T, D, F>(mat: &ArrayBase<D, Ix2>, tolerance: F)
                                 -> bool
-    where T: LinxalScalar,
+    where T: LinxalImplScalar,
           D: Data<Elem=T>,
           F: Into<T::RealPart> {
     let tol = tolerance.into();
@@ -44,13 +44,13 @@ pub fn is_diagonal_tol<T, D, F>(mat: &ArrayBase<D, Ix2>, tolerance: F)
 }
 
 /// Returns true iff the matrix is an identity matrix.
-pub fn is_identity<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> bool {
+pub fn is_identity<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> bool {
     is_identity_tol(mat, T::tol())
 }
 
 /// Returns true iff the matrix is an identity matrix, within a
 /// given tolerance.
-pub fn is_identity_tol<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>, tol: T::RealPart) -> bool {
+pub fn is_identity_tol<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>, tol: T::RealPart) -> bool {
     if !is_square_size(&mat.raw_dim()) {
         return false;
     }
@@ -60,13 +60,13 @@ pub fn is_identity_tol<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>
 
 /// Return true iff the matrix if Hermitian (or symmetric in the real
 /// case).
-pub fn is_symmetric<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> bool {
+pub fn is_symmetric<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> bool {
     is_symmetric_tol(mat, default_tol(mat))
 }
 
 /// Return true iff the matrix if Hermitian (or symmetric in the real
 /// case), within a given tolerance.
-pub fn is_symmetric_tol<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>, tol: T::RealPart) -> bool {
+pub fn is_symmetric_tol<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>, tol: T::RealPart) -> bool {
     let d = mat.dim();
 
     if !is_square_size(&mat.raw_dim()) {
@@ -90,7 +90,7 @@ pub fn is_symmetric_tol<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2
 ///
 /// $$U^H\ cdot U = U \cdot U^H = I$$
 ///
-pub fn is_unitary_tol<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>, tol: T::RealPart) -> bool {
+pub fn is_unitary_tol<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>, tol: T::RealPart) -> bool {
     if !is_square_size(&mat.raw_dim()) {
         return false;
     }
@@ -104,7 +104,7 @@ pub fn is_unitary_tol<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>,
 ///
 /// $$U^H\ cdot U = U \cdot U^H = I$$
 ///
-pub fn is_unitary<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> bool {
+pub fn is_unitary<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> bool {
     is_unitary_tol(mat, default_tol(mat))
 }
 
@@ -112,7 +112,7 @@ pub fn is_unitary<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> 
 /// side specified by `uplo`.
 pub fn is_triangular_tol<T, D, F>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric, tolerance: F)
                                   -> bool
-    where T: LinxalScalar,
+    where T: LinxalImplScalar,
           D: Data<Elem=T>,
           F: Into<T::RealPart> {
 
@@ -128,7 +128,7 @@ pub fn is_triangular_tol<T, D, F>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric, tole
 /// Uses the defalut toleranace for comparisons to 0.
 pub fn is_triangular<T, D>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric)
                                   -> bool
-    where T: LinxalScalar,
+    where T: LinxalImplScalar,
           D: Data<Elem=T> {
 
     is_triangular_tol(mat, uplo, default_tol(&mat))
@@ -138,7 +138,7 @@ pub fn is_triangular<T, D>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric)
 /// tolerance.
 ///
 /// Zero-dimension matrices have 0 bandwidth.
-pub fn get_lower_bandwidth_tol<T: LinxalScalar, D: Data<Elem=T>, F: Into<T::RealPart>>(mat: &ArrayBase<D, Ix2>, tol: F) -> usize {
+pub fn get_lower_bandwidth_tol<T: LinxalImplScalar, D: Data<Elem=T>, F: Into<T::RealPart>>(mat: &ArrayBase<D, Ix2>, tol: F) -> usize {
     let dim = mat.dim();
     let r = dim.0 - 1;
     let t = tol.into();
@@ -157,7 +157,7 @@ pub fn get_lower_bandwidth_tol<T: LinxalScalar, D: Data<Elem=T>, F: Into<T::Real
 /// Return the lower bandwidth of the matrix.
 ///
 /// Uses a tolerance of `T::tol()` * `max |a_ij|`
-pub fn get_lower_bandwidth<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> usize {
+pub fn get_lower_bandwidth<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> usize {
     get_lower_bandwidth_tol(mat, default_tol(mat))
 }
 
@@ -166,7 +166,7 @@ pub fn get_lower_bandwidth<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, 
 /// tolerance.
 ///
 /// Zero-dimension matrices have 0 bandwidth.
-pub fn get_upper_bandwidth_tol<T: LinxalScalar, D: Data<Elem=T>, F: Into<T::RealPart>>(mat: &ArrayBase<D, Ix2>, tol: F) -> usize {
+pub fn get_upper_bandwidth_tol<T: LinxalImplScalar, D: Data<Elem=T>, F: Into<T::RealPart>>(mat: &ArrayBase<D, Ix2>, tol: F) -> usize {
     let dim = mat.dim();
     let c = dim.1 - 1;
     let t = tol.into();
@@ -185,6 +185,6 @@ pub fn get_upper_bandwidth_tol<T: LinxalScalar, D: Data<Elem=T>, F: Into<T::Real
 /// Return the upper bandwidth of the matrix.
 ///
 /// Uses a tolerance of `T::tol()` * `max |a_ij|`
-pub fn get_upper_bandwidth<T: LinxalScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> usize {
+pub fn get_upper_bandwidth<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, Ix2>) -> usize {
     get_upper_bandwidth_tol(mat, default_tol(mat))
 }

@@ -7,7 +7,7 @@ use impl_prelude::*;
 const SVD_NORMAL_LIMIT: usize = 200;
 
 /// Trait for scalars that can implement SVD.
-pub trait SVD: LinxalScalar {
+pub trait SVD: LinxalImplScalar {
     /// Compute the singular value decomposition of a matrix.
     ///
     /// Use `Self::compute` when you don't wnat to consume the input
