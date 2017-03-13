@@ -1,3 +1,7 @@
+0.5.1:
+ - Remove stray '0.4's in documentation
+ - `Error` enum derives `Debug`
+
 0.5.0:
  - Upgrade to ndarray 0.8
  - minor fixes to remove warnings with rust 0.15 stable and 0.17 nightly
