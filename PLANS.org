@@ -3,10 +3,12 @@
 ** Functionality
 - [X] Solve linear equations
 - [X] Solve linear least squares
-- [ ] factorizations
-  - [ ] QR
-  - [ ] LU
-  - [ ] Cholesky
+- [X] factorizations
+  - [X] QR
+  - [X] LU
+  - [X] Cholesky
+- [ ] Generic inverse
+- [ ] Generic dot-product
 
 ** Interface
 - [ ] Make matrices implement traits, not floats
