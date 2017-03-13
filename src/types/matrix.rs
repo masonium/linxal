@@ -96,6 +96,9 @@ pub trait LinxalMatrix<F: LinxalScalar> {
     /// Return the inverse of the matrix, if it has one.
     fn inverse(&self) -> Result<Array<F, Ix2>, Error>;
 
+    /// Return the conjugate of the matrix.
+    fn conj(&self) -> Array<F, Ix2>;
+
     //*** property methods ***//
     /// Returns true iff the matrix is square.
     fn is_square(&self) -> bool;
@@ -210,6 +213,10 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
             Ok(factors) => factors.inverse_into().map_err(|x| x.into()),
             Err(lu_error) => Err(lu_error.into())
         }
+    }
+
+    fn conj(&self) -> Array<F, Ix2> {
+        self.mapv(|x| x.cj())
     }
 
     fn is_square(&self) -> bool {
