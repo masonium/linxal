@@ -11,7 +11,9 @@
 - [ ] Generic dot-product
 
 ** Interface
-- [ ] Make matrices implement traits, not floats
+- [X] Make matrices implement traits, not floats
+- [ ] Change SVD / eigenvalue input for computing left/right or u/vt matrices
+
 
 ** Tests
 - [ ] Coverage for all types and functionality
