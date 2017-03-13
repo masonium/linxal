@@ -1,3 +1,7 @@
+0.5.0:
+ - Upgrade to ndarray 0.8
+ - minor fixes to remove warnings with rust 0.15 stable and 0.17 nightly
+
 0.4.2:
  - Cholesky factorization
  - depcrecated `RandomGeneral::bands` due to possible `?latmt` bug

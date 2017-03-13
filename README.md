@@ -17,7 +17,7 @@ algebra routines with `rust-ndarray` as inputs and outputs.
 ```text
 [dependencies]
 ....
-linxal = "0.4"
+linxal = "0.5"
 ```
 
 ### Features ###
@@ -31,7 +31,7 @@ use [netlib](http://www.netlib.org/) LAPACK instead, via:
 ```text
 ...
 [dependencies.linxal]
-version = "0.4"
+version = "0.5"
 default-features = false
 features = ["netlib"]
 ```
