@@ -33,12 +33,48 @@
 //! Most of the useful functionality for `linxal` comes in the form of
 //! traits, which are implemented in terms of scalars and provide
 //! functionality for matrices and vectors composed of the
-//! scalars. Most traits have a `compute` function, and variants,
-//! which performs the describe behavior.
+//! scalars.
+//!
+//! The `LinxalMatrix` trait, defined on two-dimensional `ndarray`
+//! arrays, contains most of the computational funcationality in
+//! `linxal`.
+//!
+//! ```rust
+//! #[macro_use]
+//! extern crate linxal;
+//! extern crate ndarray;
+//!
+//! use linxal::types::{c32, LinxalMatrix};
+//! use ndarray::{arr1, arr2};
+//!
+//! fn main() {
+//!     let m = arr2(&[[1.0f32, 2.0],
+//!                    [-2.0, 1.0]]);
+//!
+//!     let r = m.eigenvalues(false, false);
+//!     assert!(r.is_ok());
+//!
+//!     let r = r.unwrap();
+//!     let true_evs = arr1(&[c32::new(1.0, 2.0), c32::new(1.0, -2.0)]);
+//!     assert_eq_within_tol!(true_evs, r.values, 0.01);
+//!
+//!     let b = arr1(&[-1.0, 1.0]);
+//!     let x = m.solve_linear(&b).unwrap();
+//!     let true_x = arr1(&[-0.6, -0.2]);
+//!     assert_eq_within_tol!(x, true_x, 0.0001);
+//! }
+//! ```
+//!
+//! Most functionality is implemented in terms of specific traits
+//! defined on scalars, representing computational routines. These
+//! traits typically have a `compute` function, and variants, which
+//! performs the describe behavior.
 //!
 //! For instance, the `Eigen` trait, implemented for single- and
-//! double-precision real and complex-valued matrices, allows one to
-//! compute eigenvalues and eigenvectors of square matrices.
+//! double-precision real and complex-valued scalars, allows one to
+//! compute eigenvalues and eigenvectors of square matrices with that
+//! type of scalar as elements. The above example can be implemented
+//! in terms of individual computational routines, as follows:
 //!
 //! ```rust
 //! #[macro_use]
@@ -46,23 +82,44 @@
 //! extern crate ndarray;
 //!
 //! use linxal::eigenvalues::{Eigen};
+//! use linxal::solve_linear::{SolveLinear};
 //! use linxal::types::{c32, LinxalScalar};
-//! use ndarray::{Array, arr1, arr2};
+//! use ndarray::{arr1, arr2};
 //!
 //! fn main() {
 //!     let m = arr2(&[[1.0f32, 2.0],
 //!                    [-2.0, 1.0]]);
 //!
-//!     let r = Eigen::compute_into(m, false, true);
+//!     let r = Eigen::compute(&m, false, false);
 //!     assert!(r.is_ok());
 //!
 //!     let r = r.unwrap();
 //!     let true_evs = arr1(&[c32::new(1.0, 2.0), c32::new(1.0, -2.0)]);
 //!     assert_eq_within_tol!(true_evs, r.values, 0.01);
+//!
+//!     let b = arr1(&[-1.0, 1.0]);
+//!     let x = SolveLinear::compute(&m, &b).unwrap();
+//!     let true_x = arr1(&[-0.6, -0.2]);
+//!     assert_eq_within_tol!(x, true_x, 0.0001);
 //! }
 //! ```
 //!
 //! # Details
+//!
+//! ## Prelude
+//!
+//! In practice, you can use the prelude to gain access to the most
+//! common features, rather than having to include computational
+//! traits individually.
+//!
+//! For instance, the previous example's `use`s could be replaced by:
+//!
+//! ```rust
+//! use linxal::prelude::*;
+//! ```
+//!
+//! For reference, all tests and examples will include the specific
+//! required traits, but this precision is rarely necessary.
 //!
 //! ## Symmetric Algorithms
 //!
@@ -78,15 +135,16 @@
 //! algorithms that take this argument, only that portion is read. So,
 //! for example:
 //!
-//! ```rust,ignore
+//! ```rust
 //! #[macro_use]
 //! extern crate linxal;
 //! extern crate ndarray;
 //!
-//! use linxal::eigenvalues::{SymEigen};
 //! use ndarray::{arr1, arr2};
+//! use linxal::types::{Symmetric};
+//! use linxal::eigenvalues::{SymEigen};
 //!
-//! fn test_eig_access() {
+//! fn main() {
 //!     // `upper_only` is not symmetric, but the portion below the diagonal is  never read.
 //!     let upper_only = arr2(&[[1.0f32, 2.0], [-3.0, 1.0]]);
 //!
