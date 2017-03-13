@@ -30,6 +30,7 @@ pub enum Symmetric {
 ///
 /// This enum can be used as a catch-all for errors from `linxal`
 /// computations.
+#[derive(Debug)]
 pub enum Error {
     SVD(SVDError),
     Eigen(EigenError),
