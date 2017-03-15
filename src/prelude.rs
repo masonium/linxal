@@ -9,5 +9,6 @@ pub use types::{Symmetric, Error, c32, c64};
 pub use solve_linear::general::SolveLinear;
 pub use solve_linear::symmetric::SymmetricSolveLinear;
 pub use least_squares::LeastSquares;
+pub use factorization::{Cholesky, QR, LU, QRError, LUError, CholeskyError};
 
 pub use util::external::*;
