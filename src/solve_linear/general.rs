@@ -11,8 +11,8 @@ pub trait SolveLinear: Sized + Clone {
     fn compute_multi_into<D1, D2>(a: ArrayBase<D1, Ix2>,
                                   b: ArrayBase<D2, Ix2>)
                                   -> Result<ArrayBase<D2, Ix2>, SolveError>
-        where D1: DataMut<Elem = Self> + DataOwned<Elem = Self>,
-              D2: DataMut<Elem = Self> + DataOwned<Elem = Self>;
+        where D1: DataMut<Elem = Self>,
+              D2: DataMut<Elem = Self>;
 
     /// Solve the linear system A * x = b for square matrix `a` and column vector `b`.
     fn compute_into<D1, D2>(a: ArrayBase<D1, Ix2>,
@@ -68,8 +68,8 @@ macro_rules! impl_solve_linear {
         impl SolveLinear for $impl_type {
             fn compute_multi_into<D1, D2>(mut a: ArrayBase<D1, Ix2>, mut b: ArrayBase<D2, Ix2>)
                                           -> Result<ArrayBase<D2, Ix2>, SolveError>
-                where D1: DataMut<Elem=Self> + DataOwned<Elem = Self>,
-                      D2: DataMut<Elem=Self> + DataOwned<Elem = Self> {
+                where D1: DataMut<Elem=Self>,
+                      D2: DataMut<Elem=Self> {
 
                 // Make sure the input is square.
                 let dim = a.dim();

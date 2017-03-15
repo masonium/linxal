@@ -40,7 +40,7 @@ pub trait Cholesky: LinxalScalar {
     /// The elements outside of the triangle are forcibly zero-ed.
     fn compute_into<D>(a: ArrayBase<D, Ix2>, uplo: Symmetric)
                        -> Result<ArrayBase<D, Ix2>, CholeskyError>
-        where D: DataOwned<Elem=Self> + DataMut<Elem=Self>;
+        where D: DataMut<Elem=Self>;
 
     /// Return a triangular matrix satisfying the Cholesky
     /// factorization. (see `Self::compute_into`).
@@ -58,7 +58,7 @@ macro_rules! impl_cholesky {
         impl Cholesky for $chol_type {
             fn compute_into<D>(mut a: ArrayBase<D, Ix2>, uplo: Symmetric)
                                -> Result<ArrayBase<D, Ix2>, CholeskyError>
-                where D: DataOwned<Elem=Self> + DataMut<Elem=Self> {
+                where D: DataMut<Elem=Self> {
                 let dim = a.dim();
                 if dim.0 != dim.1 {
                     return Err(CholeskyError::NotSquare);
