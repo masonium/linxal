@@ -18,6 +18,7 @@ default = ["openblas"]
 openblas = ["blas/openblas", "lapack/openblas"]
 netlib = ["blas/netlib", "lapack/netlib"]
 openblas-system = ["blas/openblas", "lapack/openblas", "openblas-src/system"]
+openblas-static = ["blas/openblas", "lapack/openblas", "openblas-src/static"]
 netlib-system = ["blas/netlib", "lapack/netlib", "netlib-src/system"]
 
 [dependencies]
