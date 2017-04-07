@@ -1,3 +1,7 @@
+0.5.2:
+ - Add factorization traits to prelude
+ - add `openblas-static` freature
+
 0.5.1:
  - Remove stray '0.4's in documentation
  - `Error` enum derives `Debug`
