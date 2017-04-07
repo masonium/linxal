@@ -8,6 +8,16 @@ pub struct LeastSquaresSolution<T, D: Dimension> {
     pub rank: usize,
 }
 
+/// Enum for specifying the rank of the input matrix for least-squares
+/// problems.
+pub enum LeastSquaresType {
+    /// data matrix is degenerate (less than full rank)
+    Degenerate,
+
+    /// / data matrix is overdetermined (of full rank)
+    Full,
+}
+
 #[derive(Debug)]
 pub enum LeastSquaresError {
     /// One of the matrices has an invalid layout.
@@ -157,10 +167,10 @@ pub trait LeastSquares: Sized + Clone {
             Err(_) => return Err(LeastSquaresError::BadLayout),
         };
 
-        // Call the original
+        // Call the matrix-based version
         let res = try!(Self::compute_multi(a, &b_mat));
 
-        // Return the
+        // Return the solution as a vector.
         Ok(LeastSquaresSolution {
             solution: res.solution.into_shape(n).unwrap(),
             rank: res.rank,

@@ -2,22 +2,13 @@
 
 use eigenvalues::{self, Eigen, SymEigen};
 use solve_linear::{SolveLinear, SymmetricSolveLinear};
-use least_squares::{LeastSquares, LeastSquaresSolution};
+use least_squares::{LeastSquares, LeastSquaresType, LeastSquaresSolution};
 use super::error::*;
 use super::scalar::LinxalScalar;
 use impl_prelude::*;
 use factorization::{QR, QRFactors, LU, LUFactors, Cholesky};
 use svd::{SVD, SVDSolution};
 use properties::{self, default_tol};
-
-/// Enum for specifying the rank of the input matrix for least-squares problems.
-pub enum LeastSquaresType {
-    /// data matrix is degenerate (less than full rank)
-    Degenerate,
-
-    /// / data matrix is overdetermined (of full rank)
-    Full,
-}
 
 /// All-encompassing matrix trait, supporting all of the linear
 /// algebra operations defined for any `LinxalScalar`.
