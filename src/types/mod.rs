@@ -18,9 +18,11 @@ pub enum Symmetric {
 pub mod impl_scalar;
 pub mod scalar;
 pub mod error;
-pub mod matrix;
+mod matrix;
+mod matrix_into;
 
 pub use self::error::Error;
 pub use self::impl_scalar::LinxalImplScalar;
 pub use self::scalar::{LinxalScalar, LinxalReal, LinxalComplex};
 pub use self::matrix::{LinxalMatrix};
+pub use self::matrix_into::{LinxalMatrixInto};
