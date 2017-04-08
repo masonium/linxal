@@ -14,16 +14,22 @@ use properties::{self, default_tol};
 /// algebra operations defined for any `LinxalScalar`.
 pub trait LinxalMatrix<F: LinxalScalar> {
     /// Compute the eigenvalues of a matrix.
-    fn eigenvalues(&self,
-                   compute_left: bool,
-                   compute_right: bool)
-                   -> Result<<F as Eigen>::Solution, EigenError>;
+    fn eigenvalues(&self) -> Result<Array<F::Complex, Ix1>, EigenError>;
 
-    /// Compute the eigenvalues of a symmetric matrix
-    fn symmetric_eigenvalues(&self,
-                             uplo: Symmetric,
-                             with_vectors: bool)
-                             -> Result<eigenvalues::Solution<F, F::RealPart>, EigenError>;
+    /// Compute the eigenvalues and eigenvectors of a matrix.
+    fn eigenvalues_vectors(&self,
+                           compute_left: bool,
+                           compute_right: bool)
+                           -> Result<eigenvalues::Solution<F, F::Complex>, EigenError>;
+
+    /// Compute the eigenvalues of a symmetric matrix.
+    fn symmetric_eigenvalues(&self, uplo: Symmetric)
+                             -> Result<Array<F::RealPart, Ix1>, EigenError>;
+
+
+    /// Compute the eigenvalues and eigenvectors of a symmetric matrix.
+    fn symmetric_eigenvalues_vectors(&self, uplo: Symmetric)
+                                     -> Result<eigenvalues::Solution<F, F::RealPart>, EigenError>;
 
     /// Solve a single system of linear equations.
     fn solve_linear<D1: Data<Elem = F>>(&self,
@@ -116,22 +122,33 @@ pub trait LinxalMatrix<F: LinxalScalar> {
     /// Returns true iff the matrix is triangular or trapezoidal, with
     /// size specified by `uplo`.
     fn is_triangular<T: Into<Option<F::RealPart>>>(&self, uplo: Symmetric, tolerance: T) -> bool;
-
 }
 
 impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
-    fn eigenvalues(&self,
-                   compute_left: bool,
-                   compute_right: bool)
-                   -> Result<<F as Eigen>::Solution, EigenError> {
+    fn eigenvalues(&self) -> Result<Array<F::Complex, Ix1>, EigenError> {
+        Eigen::compute(self, false, false).map(|s| {
+            let sol: eigenvalues::types::Solution<_, _> = s;
+            sol.values
+        })
+    }
+
+    fn eigenvalues_vectors(&self,
+                           compute_left: bool,
+                           compute_right: bool)
+                           -> Result<eigenvalues::Solution<F, F::Complex>, EigenError> {
         Eigen::compute(self, compute_left, compute_right)
     }
 
-    fn symmetric_eigenvalues(&self,
-                             uplo: Symmetric,
-                             with_vectors: bool)
+
+    fn symmetric_eigenvalues(&self, uplo: Symmetric)
+                             -> Result<Array<F::RealPart, Ix1>, EigenError> {
+        SymEigen::compute(self, uplo, false).map(|s| s.values)
+    }
+
+
+    fn symmetric_eigenvalues_vectors(&self, uplo: Symmetric)
                              -> Result<eigenvalues::Solution<F, F::RealPart>, EigenError> {
-        SymEigen::compute(self, uplo, with_vectors)
+        SymEigen::compute(self, uplo, true)
     }
 
     fn solve_linear<D1: Data<Elem = F>>(&self,
@@ -205,7 +222,7 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
     fn inverse(&self) -> Result<Array<F, Ix2>, Error> {
         match LU::compute(self) {
             Ok(factors) => factors.inverse_into().map_err(|x| x.into()),
-            Err(lu_error) => Err(lu_error.into())
+            Err(lu_error) => Err(lu_error.into()),
         }
     }
 
@@ -213,9 +230,13 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
         self.mapv(|x| x.cj())
     }
 
+    fn conj_t(&self) -> Array<F, Ix2> {
+        self.t().conj()
+    }
+
     fn is_square(&self) -> bool {
         match self.dim() {
-            (a, b) => a == b
+            (a, b) => a == b,
         }
     }
 
@@ -230,10 +251,6 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
     }
 
     fn is_identity<T: Into<Option<F::RealPart>>>(&self, tolerance: T) -> bool {
-    fn conj_t(&self) -> Array<F, Ix2> {
-        self.t().conj()
-    }
-
         let tol: F::RealPart = tolerance.into().unwrap_or(default_tol(self)).into();
         properties::is_identity_tol(self, tol)
     }
@@ -247,5 +264,4 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
         let tol: F::RealPart = tolerance.into().unwrap_or(default_tol(self)).into();
         properties::is_triangular_tol(self, uplo, tol)
     }
-
 }

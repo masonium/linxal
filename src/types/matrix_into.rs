@@ -1,6 +1,6 @@
 //! Define matrix traits for performing linear algebra operations.
 
-use eigenvalues::{Eigen, SymEigen};
+use eigenvalues::{self, Eigen, SymEigen};
 use solve_linear::{SolveLinear, SymmetricSolveLinear};
 use super::error::*;
 use super::scalar::LinxalScalar;
@@ -11,12 +11,17 @@ use svd::{SVD, SVDSolution};
 /// algebra operations defined for any `LinxalScalar`.
 pub trait LinxalMatrixInto<F: LinxalScalar> {
     /// Compute the eigenvalues of a matrix.
-    fn eigenvalues_into(self,
+    fn eigenvalues_into(self)
+                        -> Result<Array<F::Complex, Ix1>, EigenError>;
+
+    /// Compute the eigenvalues and the right and/or left eigenvectors
+    /// of a generic matrix.
+    fn eigenvalues_vectors_into(self,
                         compute_left: bool,
                         compute_right: bool)
-                        -> Result<<F as Eigen>::Solution, EigenError>;
+                        -> Result<eigenvalues::types::Solution<F, F::Complex>, EigenError>;
 
-    /// Compute the eigenvalues of a symmetric matrix
+    /// Compute the eigenvalues of a symmetric matrix.
     fn symmetric_eigenvalues_into(self,
                                   uplo: Symmetric)
                                   -> Result<Array<F::RealPart, Ix1>, EigenError>;
@@ -53,12 +58,17 @@ pub trait LinxalMatrixInto<F: LinxalScalar> {
 }
 
 impl<F: LinxalScalar, D: DataMut<Elem = F> + DataOwned<Elem = F>> LinxalMatrixInto<F> for ArrayBase<D, Ix2> {
-    fn eigenvalues_into(self,
+    fn eigenvalues_into(self) -> Result<Array<F::Complex, Ix1>, EigenError> {
+        Eigen::compute_into(self, false, false).map(|sol| sol.values)
+    }
+
+    fn eigenvalues_vectors_into(self,
                         compute_left: bool,
                         compute_right: bool)
-                        -> Result<<F as Eigen>::Solution, EigenError> {
+                        -> Result<eigenvalues::types::Solution<F, F::Complex>, EigenError> {
         Eigen::compute_into(self, compute_left, compute_right)
     }
+
 
     fn symmetric_eigenvalues_into(self,
                                   uplo: Symmetric) -> Result<Array<F::RealPart, Ix1>, EigenError> {
