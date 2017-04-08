@@ -90,7 +90,10 @@ pub trait LinxalMatrix<F: LinxalScalar> {
     /// Return the conjugate of the matrix.
     fn conj(&self) -> Array<F, Ix2>;
 
-    //*** property methods ***//
+    /// Return the cojugate transpose of the matrix.
+    fn conj_t(&self) -> Array<F, Ix2>;
+
+    // *** property methods ***//
     /// Returns true iff the matrix is square.
     fn is_square(&self) -> bool;
 
@@ -227,6 +230,10 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
     }
 
     fn is_identity<T: Into<Option<F::RealPart>>>(&self, tolerance: T) -> bool {
+    fn conj_t(&self) -> Array<F, Ix2> {
+        self.t().conj()
+    }
+
         let tol: F::RealPart = tolerance.into().unwrap_or(default_tol(self)).into();
         properties::is_identity_tol(self, tol)
     }
