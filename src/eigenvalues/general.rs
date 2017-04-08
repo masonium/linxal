@@ -7,13 +7,7 @@ use super::types::{EigenError, Solution};
 ///
 /// In order to extract eigenvalues or eigenvectors from a matrix,
 /// that matrix with must have  entries implementing the `Eigen` trait.
-pub trait Eigen: Sized + Clone {
-    /// The type of the eigenvalues.
-    type EigenValue;
-
-    /// The solution structure of the eigenvalue computation.
-    type Solution;
-
+pub trait Eigen: LinxalImplScalar {
     /// Return the eigenvalues and, optionally, the left and/or right
     /// eigenvectors of a general matrix.
     ///
@@ -22,14 +16,14 @@ pub trait Eigen: Sized + Clone {
     fn compute_into<D>(mat: ArrayBase<D, Ix2>,
                        compute_left: bool,
                        compute_right: bool)
-                       -> Result<Self::Solution, EigenError>
+                       -> Result<Solution<Self, Self::Complex>, EigenError>
         where D: DataOwned<Elem = Self> + DataMut<Elem = Self>;
 
     /// Return the eigenvvalues and, optionally, the eigenvectors of a general matrix.
     fn compute<D>(mat: &ArrayBase<D, Ix2>,
                   compute_left: bool,
                   compute_right: bool)
-                  -> Result<Self::Solution, EigenError>
+                  -> Result<Solution<Self, Self::Complex>, EigenError>
         where D: Data<Elem = Self>
     {
         let vec: Vec<Self> = mat.iter().cloned().collect();
@@ -42,13 +36,9 @@ pub trait Eigen: Sized + Clone {
 macro_rules! impl_eigen_real {
     ($impl_type:ident, $eigv_type:ident, $func:ident)  => (
         impl Eigen for $impl_type {
-
-            type EigenValue = $eigv_type;
-            type Solution = Solution<$impl_type, $eigv_type>;
-
             fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
                                compute_left: bool, compute_right: bool) ->
-                Result<Self::Solution, EigenError>
+                Result<Solution<Self, Self::Complex>, EigenError>
                 where D: DataMut<Elem=Self> + DataOwned<Elem=Self> {
 
                 let dim = mat.dim();
@@ -78,7 +68,7 @@ macro_rules! impl_eigen_real {
 
                 if info == 0 {
                     let vals: Vec<_> = values_real.iter().zip(values_imag.iter())
-                        .map(|(x, y)| Self::EigenValue::new(*x, *y)).collect();
+                        .map(|(x, y)| Self::Complex::new(*x, *y)).collect();
                     Ok(Solution {
                         values: ArrayBase::from_vec(vals),
                         left_vectors: if compute_left { Some(vl) } else { None },
@@ -101,12 +91,9 @@ macro_rules! impl_eigen_complex {
     ($impl_type:ident, $func:ident)  => (
         impl Eigen for $impl_type {
 
-            type EigenValue = $impl_type;
-            type Solution = Solution<$impl_type, $impl_type>;
-
             fn compute_into<D>(mut mat: ArrayBase<D, Ix2>,
                                compute_left: bool, compute_right: bool)
-                               -> Result<Self::Solution, EigenError>
+                               -> Result<Solution<Self, Self::Complex>, EigenError>
                 where D: DataMut<Elem=Self> + DataOwned<Elem=Self> {
 
                 let dim = mat.dim();

@@ -23,6 +23,11 @@ pub trait LinxalImplScalar
     /// For real-type scalars, this type is trivially the type itself.
     type RealPart: LinxalImplScalar + Float + NumCast + From<f32> + SampleRange;
 
+    /// Associated type defining the complex variant of this scalar.
+    ///
+    /// For real-type scalars, this type is trivially the type itself.
+    type Complex: LinxalImplScalar;
+
     /// Return the conjugate of the value.
     fn cj(self) -> Self;
 
@@ -38,6 +43,7 @@ pub trait LinxalImplScalar
 
 impl LinxalImplScalar for f32 {
     type RealPart = f32;
+    type Complex = c32;
 
     fn cj(self) -> Self {
         self
@@ -55,6 +61,7 @@ impl LinxalImplScalar for f32 {
 
 impl LinxalImplScalar for f64 {
     type RealPart = f64;
+    type Complex = c64;
 
     fn cj(self) -> Self {
         self
@@ -72,6 +79,7 @@ impl LinxalImplScalar for f64 {
 
 impl LinxalImplScalar for c32 {
     type RealPart = f32;
+    type Complex = c32;
 
     fn cj(self) -> Self {
         self.conj()
@@ -87,8 +95,10 @@ impl LinxalImplScalar for c32 {
     }
 }
 
+
 impl LinxalImplScalar for c64 {
     type RealPart = f64;
+    type Complex = c64;
 
     fn cj(self) -> Self {
         self.conj()
