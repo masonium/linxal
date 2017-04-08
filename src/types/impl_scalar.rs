@@ -39,6 +39,9 @@ pub trait LinxalImplScalar
 
     /// Return the default tolerance used for comparisons.
     fn tol() -> Self::RealPart;
+
+    /// Return an equivalent value from just a real part.
+    fn from_real(f: Self::RealPart) -> Self;
 }
 
 impl LinxalImplScalar for f32 {
@@ -56,6 +59,10 @@ impl LinxalImplScalar for f32 {
     }
     fn tol() -> Self::RealPart {
         1e-5
+    }
+
+    fn from_real(f: Self::RealPart) -> Self {
+        f
     }
 }
 
@@ -75,6 +82,10 @@ impl LinxalImplScalar for f64 {
     fn tol() -> Self::RealPart {
         2e-14
     }
+
+    fn from_real(f: Self::RealPart) -> Self {
+        f
+    }
 }
 
 impl LinxalImplScalar for c32 {
@@ -92,6 +103,9 @@ impl LinxalImplScalar for c32 {
     }
     fn tol() -> Self::RealPart {
         2e-5
+    }
+    fn from_real(f: Self::RealPart) -> Self {
+        Self::new(f, 0.0)
     }
 }
 
@@ -111,6 +125,9 @@ impl LinxalImplScalar for c64 {
     }
     fn tol() -> Self::RealPart {
         4e-14
+    }
+    fn from_real(f: Self::RealPart) -> Self {
+        Self::new(f, 0.0)
     }
 }
 
