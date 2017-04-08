@@ -17,6 +17,7 @@ use std::cmp::Ordering;
 macro_rules! assert_eq_within_tol {
     ($e1:expr, $e2:expr, $tol:expr) => (
         {
+            #[allow(unused_imports)]
             use linxal::types::LinxalImplScalar;
             match (&$e1, &$e2, &$tol) {
                 (x, y, tolerance) => {

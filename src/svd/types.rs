@@ -21,6 +21,30 @@ pub struct SVDSolution<T: LinxalImplScalar> {
     pub right_vectors: Option<Array<T, Ix2>>,
 }
 
+impl<T: LinxalImplScalar> SVDSolution<T> {
+    // Return true if the full complement of vectors is available to
+    // fully reconstruct the original matrix.
+    pub fn is_reconstructable(&self) -> bool {
+        self.left_vectors.is_some() && self.right_vectors.is_some()
+    }
+
+    /// Reconstruct the original matrix if both left and right
+    /// singular vectors are present.
+    pub fn reconstruct(&self) -> Option<Array<T, Ix2>> {
+        match (&self.left_vectors, &self.right_vectors)  {
+            (&Some(ref u), &Some(ref vt)) => {
+                let mut d: Array<T, Ix2> = Array::zeros((self.values.len(), self.values.len()));
+                d.diag_mut().zip_mut_with(&self.values, |dx, vx| {
+                    *dx = T::from_real(*vx)
+                });
+
+                Some(u.dot(&d.dot(vt)))
+            },
+            _ => None
+        }
+    }
+}
+
 /// An error resulting from a `SVD::compute*` method.
 #[derive(Debug)]
 pub enum SVDError {
