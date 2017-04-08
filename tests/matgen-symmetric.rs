@@ -7,19 +7,17 @@ extern crate rand;
 extern crate ndarray;
 
 use ndarray::prelude::*;
-use linxal::generate::{MG, RandomSymmetric};
-use linxal::eigenvalues::{SymEigen};
-use linxal::types::{c32, c64, Symmetric, LinxalScalar};
-use linxal::properties::{is_symmetric};
+use linxal::generate::{RandomSymmetric};
+use linxal::types::{c32, c64, Symmetric, LinxalMatrix, LinxalScalar};
 use rand::thread_rng;
 
-fn test_gen_symmetric<T: MG> () {
+fn test_gen_symmetric<T: LinxalScalar> () {
     for t in 1..21 {
         // generate a presumably symmetric matrix.
         let m: Array<T, Ix2> = RandomSymmetric::new(t, &mut thread_rng()).generate().ok().unwrap();
 
         // Ensure that it is actually symmetric.
-        assert!(is_symmetric(&m));
+        assert!(m.is_symmetric(None));
     }
 }
 
@@ -46,14 +44,14 @@ fn symmetric_with_gen_eigenvalues<T: LinxalScalar>() {
             .generate_with_ev().ok().unwrap();
         
         // The generated matrix should be symmetric.
-        assert!(is_symmetric(&pair.0));
+        assert!(pair.0.is_symmetric(None));
 
         // The calculated eigenvalues of the matrix should match the ones returned by generate*.
         let mut sorted_evs = pair.1.clone();
         sorted_evs.as_slice_mut().unwrap().sort_by(|x, y| x.partial_cmp(y).unwrap());
         
-        let ev_solution = SymEigen::compute(&pair.0, Symmetric::Upper, false).unwrap();
-        let mut solution_evs = ev_solution.values.clone();
+        let ev_solution = pair.0.symmetric_eigenvalues(Symmetric::Upper).unwrap();
+        let mut solution_evs = ev_solution.clone();
         solution_evs.as_slice_mut().unwrap().sort_by(|x, y| x.partial_cmp(y).unwrap());
 
         // Make sure the compute eigenvalues are equivalent to the 

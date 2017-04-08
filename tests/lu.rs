@@ -6,6 +6,7 @@ extern crate num_traits;
 
 use ndarray::{Array, ArrayBase, Data, Ix2};
 use linxal::factorization::{LUError, LUFactors};
+use linxal::types::{LinxalMatrix};
 use std::cmp;
 
 /// Check that all the properties of the lu factorization are
@@ -52,7 +53,7 @@ fn lu_diag() {
     let mut m = Array::zeros((4, 4));
     m.diag_mut().assign(&Array::linspace(1.0, 4.0, 4));
 
-    let lu = LUFactors::compute(&m);
+    let lu = m.lu();
     assert!(lu.is_ok());
 
     check_lu(&m, &lu.unwrap(), true);
@@ -63,7 +64,7 @@ fn lu_rectanglular() {
     let v: Vec<f32> = (0..12).map(|x| (x * x) as f32).collect();
     let m = Array::from_vec(v).into_shape((3, 4)).unwrap();
 
-    let lu = LUFactors::compute(&m);
+    let lu = m.lu();
     assert!(lu.is_ok());
 
     check_lu(&m, &lu.unwrap(), true);

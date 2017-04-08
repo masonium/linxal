@@ -7,63 +7,62 @@ extern crate rand;
 
 use ndarray::{Array, ArrayBase, Data, Ix2};
 use rand::thread_rng;
-use linxal::eigenvalues::SymEigen;
-use linxal::factorization::{Cholesky, CholeskyError};
-use linxal::types::{Symmetric, c32, c64};
-use linxal::properties::is_triangular;
-use linxal::generate::{RandomSemiPositive, MG};
-use linxal::util::conj_t;
+use linxal::types::{LinxalScalar, LinxalMatrix, Symmetric, c32, c64};
+use linxal::types::error::{ CholeskyError};
+use linxal::generate::{RandomSemiPositive};
 
 fn check_cholesky<T, D1, D2>(mat: ArrayBase<D1, Ix2>, chol: ArrayBase<D2, Ix2>, uplo: Symmetric)
-    where T: Cholesky, D1: Data<Elem=T>, D2: Data<Elem=T> {
+    where T: LinxalScalar, D1: Data<Elem=T>, D2: Data<Elem=T> {
     // Check the dimension
     assert_eq!(mat.dim(), chol.dim());
 
     // The matrix must be triangular
-    assert!(is_triangular(&chol, uplo));
+    assert!(chol.is_triangular(uplo, None));
 
     // The fatorization must match the original matrix.
     match uplo {
         Symmetric::Lower => {
-            let u = conj_t(&chol);
+            let u = chol.conj_t();
             assert_eq_within_tol!(chol.dot(&u), mat, 1e-4.into());
         },
+
         Symmetric::Upper => {
-            let l = conj_t(&chol);
+            let l = chol.conj_t();
+            println!("{:?} {:?} {:?} {:?}", chol, l, l.dot(&chol), mat);
             assert_eq_within_tol!(l.dot(&chol), mat, 1e-4.into());
         }
     }
 }
 
 
-fn cholesky_identity_generic<T: Cholesky>() {
+fn cholesky_identity_generic<T: LinxalScalar>() {
     for n in 1..11 {
         let m: Array<T, Ix2> = Array::eye(n);
 
-        let l = Cholesky::compute(&m, Symmetric::Upper).ok().unwrap();
+        let l = m.cholesky(Symmetric::Upper).ok().unwrap();
         assert_eq_within_tol!(l, m, 1e-5.into());
     }
 }
 
-fn cholesky_generate_generic<T: MG + Cholesky>(uplo: Symmetric) {
+fn cholesky_generate_generic<T: LinxalScalar>(uplo: Symmetric) {
     let mut rng = thread_rng();
     for n in 1..11 {
         let m: Array<T, Ix2> = RandomSemiPositive::new(n, &mut rng).generate().unwrap();
 
-        let res = Cholesky::compute(&m, uplo);
+        let res = m.cholesky(uplo);
         let chol = res.ok().unwrap();
         check_cholesky(m, chol, uplo);
     }
 }
 
-fn cholesky_fail_zero_ev<T: MG + Cholesky + SymEigen>() {
+fn cholesky_fail_zero_ev<T: LinxalScalar>() {
     let mut rng = thread_rng();
     for n in 4..11 {
         let mut gen: RandomSemiPositive<T> = RandomSemiPositive::new(n, &mut rng);
         let r = gen.rank(0).generate_with_sv();
         let m = r.ok().unwrap();
 
-        let res = Cholesky::compute(&m.0, Symmetric::Upper);
+        let res = m.0.cholesky(Symmetric::Upper);
         assert_eq!(res.err().unwrap(), CholeskyError::NotPositiveDefinite);
     }
 }
@@ -105,7 +104,7 @@ fn cholesky_fail_not_square() {
             }
             let m: Array<f32, Ix2> = Array::linspace(1.0, 2.0, r*c).into_shape((r, c)).unwrap();
 
-            let res = Cholesky::compute(&m, Symmetric::Upper);
+            let res = m.cholesky(Symmetric::Upper);
             assert_eq!(res.err().unwrap(), CholeskyError::NotSquare);
         }
     }

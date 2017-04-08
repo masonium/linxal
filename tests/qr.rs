@@ -7,6 +7,7 @@ extern crate num_traits;
 
 use ndarray::{Array, ArrayBase, arr1, Data, Ix2};
 use linxal::factorization::{QRFactors};
+use linxal::types::{LinxalMatrix};
 
 /// Check that all the properties of the qr factorization are
 /// reasonable.
@@ -58,7 +59,7 @@ fn check_qr<D1: Data<Elem=f32>>(m: &ArrayBase<D1, Ix2>, qr: &QRFactors<f32>) {
 fn qr_basic_tall() {
     let m = arr1(&[0.0, 2.0, 2.0, -1.0, 2.0, -1.0, 0.0, 1.5, 2.0, -1.0, 2.0, -1.0]).into_shape((6, 2)).unwrap();
 
-    let qr = QRFactors::compute(&m);
+    let qr = m.qr();
     assert!(qr.is_ok());
 
     check_qr(&m, &qr.unwrap());
@@ -70,7 +71,7 @@ fn qr_basic_wide() {
     let m = arr1(&[0.0, 2.0, 2.0, -1.0, 2.0, -1.0,
                    0.0, 1.5, 2.0, -1.0, 2.0, -1.0]).into_shape((2, 6)).unwrap();
 
-    let qr = QRFactors::compute(&m);
+    let qr = m.qr();
     assert!(qr.is_ok());
 
     check_qr(&m, &qr.unwrap());
@@ -83,7 +84,7 @@ fn qr_basic_linspace() {
         for n in 1..6 {
             let mat = Array::linspace(1.0, (m*n) as f32, m*n).into_shape((m, n)).unwrap();
 
-            let qr = QRFactors::compute(&mat);
+            let qr = mat.qr();
             assert!(qr.is_ok());
 
             check_qr(&mat, &qr.unwrap());

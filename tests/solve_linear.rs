@@ -5,14 +5,14 @@ extern crate linxal;
 extern crate lapack;
 
 use ndarray::{Array, Ix1, Ix2, Axis};
-use linxal::solve_linear::{SolveLinear};
+use linxal::types::{LinxalMatrix, LinxalMatrixInto};
 
 #[test]
 pub fn solve_linear_vector() {
     let a: Array<f32, Ix2> = Array::from_shape_vec((2, 2), vec![1.0, 2.0, 3.0, 4.0]).unwrap();
     let b: Array<f32, Ix1> = Array::from_vec(vec![3.0, 7.0]);
 
-    let x = SolveLinear::compute_into(a, b);
+    let x = a.solve_linear_into(b);
 
     assert!(x.is_ok());
     let values = x.unwrap();
@@ -28,7 +28,7 @@ pub fn solve_linear_matrix() {
     let b_vec = vec![3.0, -1.0, 2.0, 7.0, -1.0, 6.0];
     let b: Array<f32, Ix2> = Array::from_shape_vec((2, 3), b_vec).unwrap();
 
-    let x = SolveLinear::compute_multi_into(a, b);
+    let x = a.solve_multi_linear_into(b);
 
     assert!(x.is_ok());
     let values = x.unwrap();
@@ -52,10 +52,9 @@ pub fn solve_linear_vector_view() {
 
     for (bv, xv) in b.axis_iter(Axis(1)).zip(truth.axis_iter(Axis(1))) {
         println!("b ={:?}, t = {:?}", bv, xv);
-        let x = SolveLinear::compute(&a, &bv);
+        let x = a.solve_linear(&bv);
         assert!(x.is_ok());
         let values = x.unwrap();
         assert_eq_within_tol!(&values, &xv, 1e-5);
     }
-
 }

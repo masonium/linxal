@@ -6,18 +6,17 @@ extern crate rand;
 extern crate ndarray;
 
 use ndarray::prelude::*;
-use linxal::generate::{MG, RandomGeneral, RandomUnitary};
-use linxal::types::{c32, c64};
-use linxal::properties::{is_unitary, is_diagonal};
+use linxal::generate::{RandomGeneral, RandomUnitary};
+use linxal::types::{LinxalMatrix, LinxalScalar, c32, c64};
 use rand::thread_rng;
 
-fn test_gen_unitary<T: MG> () {
+fn test_gen_unitary<T: LinxalScalar> () {
     for t in 1..21 {
         // generate a presumably unitary matrix.
         let m: Array<T, Ix2> = RandomUnitary::new(t, &mut thread_rng()).generate().ok().unwrap();
 
         // Ensure that it is actually unitary.
-        assert!(is_unitary(&m));
+        assert!(m.is_unitary(None));
     }
 }
 
@@ -42,11 +41,11 @@ fn test_gen_unitary_c64() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Create random diagonal matrices
-fn test_gen_diagonal<T: MG> () {
+fn test_gen_diagonal<T: LinxalScalar> () {
     for r in 1..15 {
         for c in 1..15 {
         let m: Array<T, Ix2> = RandomGeneral::new(r, c, &mut thread_rng()).diagonal().generate().ok().unwrap();
-            assert!(is_diagonal(&m));
+            assert!(m.is_diagonal(None));
         }
     }
 }

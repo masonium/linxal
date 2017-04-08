@@ -8,7 +8,7 @@ extern crate rand;
 use rand::thread_rng;
 use ndarray::{Array, Ix2};
 use linxal::types::{c32, c64, LinxalMatrix, LinxalScalar};
-use linxal::generate::RandomUnitary;
+use linxal::generate::{RandomUnitary};
 
 fn invert_unitary<F: LinxalScalar>() {
     let mut gen = thread_rng();
@@ -16,11 +16,11 @@ fn invert_unitary<F: LinxalScalar>() {
 
     for _ in 1..10 {
         let m: Array<F, Ix2> = rg.generate().unwrap();
-        let inv: Array<F, Ix2> = m.inverse().unwrap();
-        let mc = m.conj();
-        let transpose = mc.t();
+        let m_ct = m.conj_t();
 
-        assert_eq_within_tol!(&inv, &transpose, 1e-3.into());
+        let inv: Array<F, Ix2> = m.inverse().unwrap();
+
+        assert_eq_within_tol!(&inv, &m_ct, 1e-3.into());
     }
 }
 

@@ -2,15 +2,15 @@
 extern crate linxal;
 extern crate ndarray;
 
-use linxal::eigenvalues::{Eigen, EigenError};
-use linxal::types::{c32};
+use linxal::types::{LinxalMatrixInto, c32};
+use linxal::types::error::{EigenError};
 use ndarray::{arr1, arr2, Array};
 
 #[test]
 fn try_eig() {
     let m = arr2(&[[1.0f32, 2.0], [2.0, 1.0]]);
 
-    let r = Eigen::compute_into(m, false, true);
+    let r = m.eigenvalues_into();
     assert!(r.is_ok());
 }
 
@@ -19,7 +19,7 @@ fn try_eig_func() {
     let m = arr2(&[[1.0f32, 2.0],
                    [-2.0, 1.0]]);
 
-    let r = Eigen::compute_into(m, false, true);
+    let r = m.eigenvalues_vectors_into(false, true);
     assert!(r.is_ok());
 
     let r = r.unwrap();
@@ -31,7 +31,7 @@ fn try_eig_func() {
 fn eig_nonsquare() {
     let m = Array::linspace(0.0, 5.0, 6).into_shape((3, 2)).unwrap();
 
-    let r = Eigen::compute_into(m, false, false);
+    let r = m.eigenvalues_into();
     assert!(r.is_err());
     assert_eq!(r.err().unwrap(), EigenError::NotSquare);
 }
