@@ -33,7 +33,7 @@ impl<T: LinxalImplScalar> SVDSolution<T> {
     pub fn reconstruct(&self) -> Option<Array<T, Ix2>> {
         match (&self.left_vectors, &self.right_vectors)  {
             (&Some(ref u), &Some(ref vt)) => {
-                let mut d: Array<T, Ix2> = Array::zeros((self.values.len(), self.values.len()));
+                let mut d: Array<T, Ix2> = Array::zeros((u.dim().1, vt.dim().0));
                 d.diag_mut().zip_mut_with(&self.values, |dx, vx| {
                     *dx = T::from_real(*vx)
                 });
@@ -48,7 +48,12 @@ impl<T: LinxalImplScalar> SVDSolution<T> {
 /// An error resulting from a `SVD::compute*` method.
 #[derive(Debug)]
 pub enum SVDError {
+    /// The decomposition algorithm failed to converge
     Unconverged,
+
+    // Internal error from underlying LAPACK call
     IllegalParameter(i32),
+
+    /// The input matrix does not follow C- or F- layout.
     BadLayout,
 }
