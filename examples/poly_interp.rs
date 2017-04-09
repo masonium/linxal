@@ -10,7 +10,7 @@ extern crate rand;
 
 use rand::thread_rng;
 use rand::distributions::{Range, IndependentSample};
-use linxal::solve_linear::SolveLinear;
+use linxal::types::{LinxalMatrixInto};
 use ndarray::{Array, Ix1};
 
 /// Evalutate a polynomial f with coefficients `coefs` at `x`.
@@ -55,7 +55,7 @@ fn main() {
     }
 
     // Solve the linear equations defined by the matrices.
-    let fitted_coefs = SolveLinear::compute(&a, &b);
+    let fitted_coefs = a.solve_linear_into(b);
     assert!(fitted_coefs.is_ok());
 
     println!("Fitted Coefficients:\n{:?}", fitted_coefs.unwrap());

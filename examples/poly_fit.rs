@@ -18,7 +18,7 @@ extern crate rand;
 
 use rand::thread_rng;
 use rand::distributions::{Normal, Sample};
-use linxal::least_squares::LeastSquares;
+use linxal::types::LinxalMatrix;
 use ndarray::{Array, arr1, Ix1};
 
 /// Evalutate a polynomial f with coefficients `coefs` at `x`.
@@ -67,7 +67,7 @@ fn main() {
     }
 
     // Use least squares to fit the matrix.
-    let fitted_coefs = LeastSquares::compute_multi(&a, &b);
+    let fitted_coefs = a.multi_least_squares(&b, None);
     assert!(fitted_coefs.is_ok());
 
     println!("Fitted Coefficients:\n{:?}", fitted_coefs.unwrap().solution.t());

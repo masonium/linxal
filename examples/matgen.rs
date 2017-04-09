@@ -18,7 +18,7 @@ fn generate_general() {
     println!("{:?}", generator.generate().unwrap());
     println!("---");
     generator.diagonal().sv_random_uniform(1.0, 4.0);
-    println!("Diagnoal matrix with random singular values");
+    println!("Diagonal matrix with random singular values");
     println!("{:?}", generator.generate().unwrap());
     let (g, v) = generator.generate_with_sv().unwrap();
     println!("{:?}", g);
