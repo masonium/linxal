@@ -91,7 +91,7 @@ fn lu_perm_diag() {
     m[(2, 1)] = 3.0;
     m[(3, 3)] = 4.0;
 
-    let lu = LUFactors::compute(&m);
+    let lu = m.lu();
     println!("{:?}", lu);
     assert!(lu.is_ok());
 

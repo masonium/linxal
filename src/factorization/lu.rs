@@ -79,13 +79,6 @@ impl<T: LU> LUFactors<T> {
         })
     }
 
-    /// Given a matrix, compute the LU decomposition of the matrix,
-    /// returned as a `LUFactors` object.
-    pub fn compute<D1: Data<Elem=T>>(mat: &ArrayBase<D1, Ix2>)
-                                     -> Result<LUFactors<T>, LUError> {
-        LU::compute(mat)
-    }
-
     /// Returns the inverse of the original matrix, assuming it was
     /// square.
     pub fn inverse(&self) -> Result<Array<T, Ix2>, LUError> {

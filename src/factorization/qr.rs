@@ -51,13 +51,6 @@ impl<T: QR> QRFactors<T> {
         })
     }
 
-    /// Given a matrix, compute the QR decomposition of the matrix,
-    /// returned as a `QRFactors` object.
-    pub fn compute<D1: Data<Elem=T>>(mat: &ArrayBase<D1, Ix2>)
-                                     -> Result<QRFactors<T>, QRError> {
-        QR::compute(mat)
-    }
-
     /// Return the number of rows in the original matrix
     pub fn rows(&self) -> usize {
         self.mat.rows()
