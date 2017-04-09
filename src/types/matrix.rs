@@ -7,7 +7,7 @@ use super::error::*;
 use super::scalar::LinxalScalar;
 use impl_prelude::*;
 use factorization::{QR, QRFactors, LU, LUFactors, Cholesky};
-use svd::{SVD, SVDSolution};
+use svd::{SVD, SVDSolution, SVDComputeVectors};
 use properties::{self, default_tol};
 
 /// All-encompassing matrix trait, supporting all of the linear
@@ -87,8 +87,21 @@ pub trait LinxalMatrix<F: LinxalScalar> {
     /// upper- or lower-triangular matrix defining it.
     fn cholesky(&self, uplo: Symmetric) -> Result<Array<F, Ix2>, CholeskyError>;
 
-    /// Return the singular value decomposition of the matrix.
-    fn svd(&self, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<F>, SVDError>;
+    /// Return the full singular value decomposition of the matrix.
+    ///
+    /// The `SVDSolution` contains full size matrices `u` (m x m) and `vt` (n x n).
+    fn svd_full(&self) -> Result<SVDSolution<F>, SVDError>;
+
+    /// Return the economic singular value decomposition of the matrix.
+    ///
+    /// The `SVDSolution` contains sufficient matrices `u` (m x p) and
+    /// `vt` (p x n), where `p` is the minimum of `m` and `n`.
+    fn svd_econ(&self) -> Result<SVDSolution<F>, SVDError>;
+
+    /// Return the full singular value decomposition of the matrix.
+    ///
+    /// The `SVDSolution` contains full size matrices `u` (m x m) and `vt` (n x n).
+    fn singular_values(&self) -> Result<Array<F::RealPart, Ix1>, SVDError>;
 
     /// Return the inverse of the matrix, if it has one.
     fn inverse(&self) -> Result<Array<F, Ix2>, Error>;
@@ -215,8 +228,16 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
         Cholesky::compute(self, uplo)
     }
 
-    fn svd(&self, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<F>, SVDError> {
-        SVD::compute(self, compute_u, compute_vt)
+    fn svd_full(&self) -> Result<SVDSolution<F>, SVDError> {
+        SVD::compute(self, SVDComputeVectors::Full)
+    }
+
+    fn svd_econ(&self) -> Result<SVDSolution<F>, SVDError> {
+        SVD::compute(self, SVDComputeVectors::Economic)
+    }
+
+    fn singular_values(&self) -> Result<Array<F::RealPart, Ix1>, SVDError> {
+        SVD::compute(self, SVDComputeVectors::None).map(|x| x.values)
     }
 
     fn inverse(&self) -> Result<Array<F, Ix2>, Error> {

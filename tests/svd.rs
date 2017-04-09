@@ -5,21 +5,21 @@ extern crate linxal;
 extern crate lapack;
 
 use ndarray::{Array, Ix2};
-use linxal::types::{LinxalMatrix, LinxalScalar, c32, c64};
+use linxal::types::{LinxalMatrix, LinxalMatrixInto, LinxalScalar, c32, c64};
 use num_traits::{One};
 
 /// Identity matrix SVD
 pub fn svd_test_identity<T: LinxalScalar>() {
     const N: usize = 100;
     let m: Array<T, Ix2> = Array::eye(N);
-    let solution = m.svd(false, false);
+    let solution = m.singular_values();
     assert!(solution.is_ok());
     let values = solution.unwrap();
 
     let truth = Array::from_vec(vec![T::RealPart::one(); N]);
-    assert_eq_within_tol!(&values.values, &truth, 1e-5.into());
+    assert_eq_within_tol!(&values, &truth, 1e-5.into());
 
-    let full_sol = m.svd(true, true).unwrap();
+    let full_sol = m.svd_full().unwrap();
     assert_eq_within_tol!(&full_sol.reconstruct().unwrap(), &m, 1e-4.into());
 }
 
@@ -52,17 +52,17 @@ macro_rules! stlf {
 
             m.diag_mut().assign(&svs);
 
-            let solution = m.svd(false, false);
-            let values = match solution {
-                Err(_) => { assert!(false); return },
-                Ok(x) => x.values
-            };
+            let values = m.singular_values().unwrap();
 
             let truth = Array::linspace(100.0, 1.0, N);
             assert_eq_within_tol!(&values, &truth, 1e-5);
 
-            let full_sol = m.svd(true, true).unwrap();
+            let full_sol = m.svd_full().unwrap();
             assert_eq_within_tol!(&full_sol.reconstruct().unwrap(), &m, 1e-4.into());
+
+            let econ_sol = m.clone().svd_econ_into().unwrap();
+            assert_eq_within_tol!(&econ_sol.reconstruct().unwrap(), &m, 1e-4.into());
+
         }
     )
 }
@@ -85,16 +85,16 @@ macro_rules! stlc {
 
             m.diag_mut().assign(&svs);
 
-            let solution = m.svd(false, false);
-            let values = match solution {
-                Err(_) => { assert!(false); return },
-                Ok(x) => x.values
-            };
+            let values = m.singular_values().unwrap();
 
             let truth = Array::linspace(100.0 as $sv, 1.0, N);
             assert_eq_within_tol!(&values, &truth, 1e-5);
 
-            let full_sol = m.svd(true, true).unwrap();
+
+            let econ_sol = m.svd_econ().unwrap();
+            assert_eq_within_tol!(&econ_sol.reconstruct().unwrap(), &m, 1e-4.into());
+
+            let full_sol = m.clone().svd_full_into().unwrap();
             assert_eq_within_tol!(&full_sol.reconstruct().unwrap(), &m, 1e-4.into());
         }
     )

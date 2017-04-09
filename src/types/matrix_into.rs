@@ -5,7 +5,7 @@ use solve_linear::{SolveLinear, SymmetricSolveLinear};
 use super::error::*;
 use super::scalar::LinxalScalar;
 use impl_prelude::*;
-use svd::{SVD, SVDSolution};
+use svd::{SVD, SVDSolution, SVDComputeVectors};
 
 /// All-encompassing matrix trait, supporting all of the linear
 /// algebra operations defined for any `LinxalScalar`.
@@ -50,8 +50,21 @@ pub trait LinxalMatrixInto<F: LinxalScalar> {
         (self, b: ArrayBase<D1, Ix2>, uplo: Symmetric)
          -> Result<ArrayBase<D1, Ix2>, SolveError>;
 
-    /// Return the singular value decomposition of the matrix.
-    fn svd_into(self, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<F>, SVDError>;
+    /// Return the full singular value decomposition of the matrix.
+    ///
+    /// The `SVDSolution` contains full size matrices `u` (m x m) and `vt` (n x n).
+    fn svd_full_into(self) -> Result<SVDSolution<F>, SVDError>;
+
+    /// Return the economic singular value decomposition of the matrix.
+    ///
+    /// The `SVDSolution` contains sufficient matrices `u` (m x p) and
+    /// `vt` (p x n), where `p` is the minimum of `m` and `n`.
+    fn svd_econ_into(self) -> Result<SVDSolution<F>, SVDError>;
+
+    /// Return the full singular value decomposition of the matrix.
+    ///
+    /// The `SVDSolution` contains full size matrices `u` (m x m) and `vt` (n x n).
+    fn singular_values_into(self) -> Result<Array<F::RealPart, Ix1>, SVDError>;
 
     /// Return the conjugate of the matrix.
     fn conj_into(self) -> Self;
@@ -100,8 +113,16 @@ impl<F: LinxalScalar, D: DataMut<Elem = F> + DataOwned<Elem = F>> LinxalMatrixIn
             SymmetricSolveLinear::compute_multi_into(self, uplo, b)
         }
 
-    fn svd_into(self, compute_u: bool, compute_vt: bool) -> Result<SVDSolution<F>, SVDError> {
-        SVD::compute_into(self, compute_u, compute_vt)
+    fn svd_full_into(self) -> Result<SVDSolution<F>, SVDError> {
+        SVD::compute_into(self, SVDComputeVectors::Full)
+    }
+
+    fn svd_econ_into(self) -> Result<SVDSolution<F>, SVDError> {
+        SVD::compute_into(self, SVDComputeVectors::Economic)
+    }
+
+    fn singular_values_into(self) -> Result<Array<F::RealPart, Ix1>, SVDError> {
+        SVD::compute_into(self, SVDComputeVectors::None).map(|x| x.values)
     }
 
     fn conj_into(self) -> Self {
