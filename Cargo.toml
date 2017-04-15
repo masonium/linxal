@@ -5,7 +5,7 @@ authors = ["Mason Smith <masonium@gmail.com>"]
 
 description = "Linear Algebra package with rust-ndarray interface"
 repository = "https://github.com/masonium/linxal"
-documentation = "https://masonium.github.io/rustdoc/linxal/"
+documentation = "https://docs.rs/linxal/"
 
 readme = "README.md"
 license = "MIT"
