@@ -1,3 +1,9 @@
+0.6.0:
+ - Provide `LinxalMatrix` and `LinxalMatrxInto` traits to unify matrix calculations
+ - Revamp `LinxalScalar` to unify all individual computational traits
+ - Replace former `LinxalScalar` with `LixnalImplScalar` for internal implementations
+ - Economic decomposition for SVDs
+
 0.5.2:
  - Add factorization traits to prelude
  - add `openblas-static` freature

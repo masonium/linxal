@@ -1,6 +1,6 @@
 [package]
 name = "linxal"
-version = "0.5.2"
+version = "0.6.0"
 authors = ["Mason Smith <masonium@gmail.com>"]
 
 description = "Linear Algebra package with rust-ndarray interface"
