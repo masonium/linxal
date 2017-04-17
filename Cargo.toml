@@ -22,13 +22,13 @@ openblas-static = ["blas/openblas", "lapack/openblas", "openblas-src/static"]
 netlib-system = ["blas/netlib", "lapack/netlib", "netlib-src/system"]
 
 [dependencies]
-ndarray = "0.8"
+ndarray = "0.9"
 num-traits = "0.1"
 rand = "0.3"
 libc = "0.2"
 
 [dev-dependencies]
-itertools = "0.5"
+itertools = "0.6"
 
 [dependencies.lapack]
 version = "0.11"

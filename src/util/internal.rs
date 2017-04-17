@@ -1,4 +1,4 @@
-use impl_prelude::LinxalImplScalar;
+use impl_prelude::*;
 use ndarray::prelude::*;
 use ndarray::{Data, DataMut};
 use lapack::c::Layout;
