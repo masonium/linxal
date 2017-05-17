@@ -61,7 +61,7 @@ pub fn make_triangular_into<T, D>(mut a: ArrayBase<D, Ix2>, uplo: Symmetric) -> 
 
 /// Force a matrix to be triangular or trapezoidal, by zero-ing out
 /// the other elements.
-pub fn make_triangular<T, D>(a: ArrayBase<D, Ix2>, uplo: Symmetric) -> Array<T, Ix2>
+pub fn make_triangular<T, D>(a: &ArrayBase<D, Ix2>, uplo: Symmetric) -> Array<T, Ix2>
     where T: LinxalImplScalar,
           D: Data<Elem = T>
 {
