@@ -3,6 +3,7 @@ use libc::c_char;
 use lapack::{c32, c64};
 
 #[inline]
+#[cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
 pub fn slaror(side: u8, init: u8, m: i32, n: i32, a: &mut [f32], lda: i32, iseed: &mut [i32],
               x: &mut [f32], info: &mut i32) {
 
@@ -13,6 +14,7 @@ pub fn slaror(side: u8, init: u8, m: i32, n: i32, a: &mut [f32], lda: i32, iseed
 }
 
 #[inline]
+#[cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
 pub fn dlaror(side: u8, init: u8, m: i32, n: i32, a: &mut [f64], lda: i32, iseed: &mut [i32],
               x: &mut [f64], info: &mut i32) {
 
@@ -23,6 +25,7 @@ pub fn dlaror(side: u8, init: u8, m: i32, n: i32, a: &mut [f64], lda: i32, iseed
 }
 
 #[inline]
+#[cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
 pub fn claror(side: u8, init: u8, m: i32, n: i32, a: &mut [c32], lda: i32, iseed: &mut [i32],
               x: &mut [c32], info: &mut i32) {
 
@@ -33,6 +36,7 @@ pub fn claror(side: u8, init: u8, m: i32, n: i32, a: &mut [c32], lda: i32, iseed
 }
 
 #[inline]
+#[cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
 pub fn zlaror(side: u8, init: u8, m: i32, n: i32, a: &mut [c64], lda: i32, iseed: &mut [i32],
               x: &mut [c64], info: &mut i32) {
 
@@ -43,6 +47,7 @@ pub fn zlaror(side: u8, init: u8, m: i32, n: i32, a: &mut [c64], lda: i32, iseed
 }
 
 #[inline]
+#[cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
 pub fn slatmt(m: i32, n: i32, dist: u8, iseed: &mut [i32],
               sym: u8, d: &mut [f32], mode: i32,
               cond: f32, dmax: f32, rank: i32, kl: i32, ku: i32,
@@ -60,6 +65,7 @@ pub fn slatmt(m: i32, n: i32, dist: u8, iseed: &mut [i32],
 }
 
 #[inline]
+#[cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
 pub fn dlatmt(m: i32, n: i32, dist: u8, iseed: &mut [i32],
               sym: u8, d: &mut [f64], mode: i32,
               cond: f64, dmax: f64, rank: i32, kl: i32, ku: i32,
@@ -77,6 +83,7 @@ pub fn dlatmt(m: i32, n: i32, dist: u8, iseed: &mut [i32],
 }
 
 #[inline]
+#[cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
 pub fn clatmt(m: i32, n: i32, dist: u8, iseed: &mut [i32],
               sym: u8, d: &mut [f32], mode: i32,
               cond: f32, dmax: f32, rank: i32, kl: i32, ku: i32,
@@ -95,6 +102,7 @@ pub fn clatmt(m: i32, n: i32, dist: u8, iseed: &mut [i32],
 
 
 #[inline]
+#[cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
 pub fn zlatmt(m: i32, n: i32, dist: u8, iseed: &mut [i32],
               sym: u8, d: &mut [f64], mode: i32,
               cond: f64, dmax: f64, rank: i32, kl: i32, ku: i32,

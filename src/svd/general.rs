@@ -17,29 +17,29 @@ impl SVDComputeVectors {
     /// Return the size of the `U` matrix generated from this type of
     /// computation, given the size of the original matrix.
     fn u_size(&self, m: usize, n: usize) -> (usize, usize) {
-        match self {
-            &SVDComputeVectors::Full => (m, m),
-            &SVDComputeVectors::Economic => {(m, cmp::min(m, n))},
-            &SVDComputeVectors::None => (0, 0)
+        match *self {
+            SVDComputeVectors::Full => (m, m),
+            SVDComputeVectors::Economic => {(m, cmp::min(m, n))},
+            SVDComputeVectors::None => (0, 0)
         }
     }
 
     /// Return the size of the `V^H` matrix generated from this type of
     /// computation, given the size of the original matrix.
     fn vt_size(&self, m: usize, n: usize) -> (usize, usize) {
-        match self {
-            &SVDComputeVectors::Full => (n, n),
-            &SVDComputeVectors::Economic => {(cmp::min(m, n), n)},
-            &SVDComputeVectors::None => (0, 0)
+        match *self {
+            SVDComputeVectors::Full => (n, n),
+            SVDComputeVectors::Economic => {(cmp::min(m, n), n)},
+            SVDComputeVectors::None => (0, 0)
         }
     }
 
     /// Return the job descriptor implementaiton for this type.
     fn job_desc(&self) -> u8 {
-        match self {
-            &SVDComputeVectors::Full => b'A',
-            &SVDComputeVectors::Economic => b'S',
-            &SVDComputeVectors::None => b'N'
+        match *self {
+            SVDComputeVectors::Full => b'A',
+            SVDComputeVectors::Economic => b'S',
+            SVDComputeVectors::None => b'N'
         }
     }
 }

@@ -45,7 +45,7 @@ fn check_qr<D1: Data<Elem=f32>>(m: &ArrayBase<D1, Ix2>, qr: &QRFactors<f32>) {
     // R is upper-triangular/trapezoidal
     for (i, x) in r.indexed_iter() {
         if i.0 > i.1 {
-            assert_eq!(*x, 0.0);
+            assert!(x.abs() < 0.0001);
         }
     }
 

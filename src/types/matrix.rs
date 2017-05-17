@@ -262,27 +262,27 @@ impl<F: LinxalScalar, D: Data<Elem = F>> LinxalMatrix<F> for ArrayBase<D, Ix2> {
     }
 
     fn is_diagonal<T: Into<Option<F::RealPart>>>(&self, tolerance: T) -> bool {
-        let tol: F::RealPart = tolerance.into().unwrap_or(default_tol(self)).into();
+        let tol: F::RealPart = tolerance.into().unwrap_or_else(|| default_tol(self));
         properties::is_diagonal_tol(self, tol)
     }
 
     fn is_symmetric<T: Into<Option<F::RealPart>>>(&self, tolerance: T) -> bool {
-        let tol: F::RealPart = tolerance.into().unwrap_or(default_tol(self)).into();
+        let tol: F::RealPart = tolerance.into().unwrap_or_else(|| default_tol(self));
         properties::is_symmetric_tol(self, tol)
     }
 
     fn is_identity<T: Into<Option<F::RealPart>>>(&self, tolerance: T) -> bool {
-        let tol: F::RealPart = tolerance.into().unwrap_or(default_tol(self)).into();
+        let tol: F::RealPart = tolerance.into().unwrap_or_else(|| default_tol(self));
         properties::is_identity_tol(self, tol)
     }
 
     fn is_unitary<T: Into<Option<F::RealPart>>>(&self, tolerance: T) -> bool {
-        let tol: F::RealPart = tolerance.into().unwrap_or(default_tol(self)).into();
+        let tol: F::RealPart = tolerance.into().unwrap_or_else(|| default_tol(self));
         properties::is_unitary_tol(self, tol)
     }
 
     fn is_triangular<T: Into<Option<F::RealPart>>>(&self, uplo: Symmetric, tolerance: T) -> bool {
-        let tol: F::RealPart = tolerance.into().unwrap_or(default_tol(self)).into();
+        let tol: F::RealPart = tolerance.into().unwrap_or_else(|| default_tol(self));
         properties::is_triangular_tol(self, uplo, tol)
     }
 }

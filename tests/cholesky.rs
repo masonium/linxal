@@ -11,7 +11,7 @@ use linxal::types::{LinxalScalar, LinxalMatrix, Symmetric, c32, c64};
 use linxal::types::error::{ CholeskyError};
 use linxal::generate::{RandomSemiPositive};
 
-fn check_cholesky<T, D1, D2>(mat: ArrayBase<D1, Ix2>, chol: ArrayBase<D2, Ix2>, uplo: Symmetric)
+fn check_cholesky<T, D1, D2>(mat: &ArrayBase<D1, Ix2>, chol: &ArrayBase<D2, Ix2>, uplo: Symmetric)
     where T: LinxalScalar, D1: Data<Elem=T>, D2: Data<Elem=T> {
     // Check the dimension
     assert_eq!(mat.dim(), chol.dim());
@@ -28,8 +28,8 @@ fn check_cholesky<T, D1, D2>(mat: ArrayBase<D1, Ix2>, chol: ArrayBase<D2, Ix2>, 
 
         Symmetric::Upper => {
             let l = chol.conj_t();
-            println!("{:?} {:?} {:?} {:?}", chol, l, l.dot(&chol), mat);
-            assert_eq_within_tol!(l.dot(&chol), mat, 1e-4.into());
+            println!("{:?} {:?} {:?} {:?}", chol, l, l.dot(chol), mat);
+            assert_eq_within_tol!(l.dot(chol), mat, 1e-4.into());
         }
     }
 }
@@ -51,7 +51,7 @@ fn cholesky_generate_generic<T: LinxalScalar>(uplo: Symmetric) {
 
         let res = m.cholesky(uplo);
         let chol = res.ok().unwrap();
-        check_cholesky(m, chol, uplo);
+        check_cholesky(&m, &chol, uplo);
     }
 }
 

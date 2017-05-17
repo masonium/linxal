@@ -26,12 +26,12 @@ fn check_lu<D1: Data<Elem=f32>>(
     assert_eq!(u.rows(), k);
     assert_eq!(u.cols(), lu.cols());
 
-    let a = lu.reconstruct();
+    let reconstructed_a = lu.reconstruct();
 
-    println!("{:?}", a);
+    println!("{:?}", reconstructed_a);
 
     // P * L * U needs to match the original matrix.
-    assert_eq_within_tol!(a, m, 0.001);
+    assert_eq_within_tol!(reconstructed_a, m, 0.001);
 
     let inverse = lu.inverse();
 

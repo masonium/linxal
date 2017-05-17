@@ -75,7 +75,7 @@ impl<T: QR> QRFactors<T> {
     /// faithfully recreate the original matrix A.
     pub fn qk<K: Into<Option<usize>>>(&self, k: K) -> Result<Array<T, Ix2>, QRError> {
         let kr = k.into();
-        QR::compute_q(&self.mat, &self.tau, kr.unwrap_or(self.p()))
+        QR::compute_q(&self.mat, &self.tau, kr.unwrap_or_else(|| self.p()))
     }
 
     /// Return the `m` by `min(m, n)` matrix `Q`.
@@ -97,7 +97,7 @@ impl<T: QR> QRFactors<T> {
     /// faithfully recreate the original matrix A.
     pub fn rk<K: Into<Option<usize>>>(&self, k: K) -> Result<Array<T, Ix2>, QRError> {
         let kr = k.into();
-        let p = kr.unwrap_or(self.p());
+        let p = kr.unwrap_or_else(|| self.p());
         QR::compute_r(&self.mat, p)
     }
 

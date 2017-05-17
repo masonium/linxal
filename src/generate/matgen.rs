@@ -13,10 +13,14 @@ use lapack::c::Layout;
 use num_traits::{Float};
 use generate::types::*;
 
+
+/// Newtype for functions retuning a matrix and a set of singular values.
+pub type MatrixSVPair<T: LinxalImplScalar> = (Array<T, Ix2>, Array<T::RealPart, Ix1>);
+
 /// Scalar trait for generating random matrices.
 pub trait MG: LinxalImplScalar {
     /// Create a matrix based on the specified arguments.
-    fn general(gen: &mut GenerateArgs<Self>) -> Result<(Array<Self, Ix2>, Array<Self::RealPart, Ix1>), GenerateError>;
+    fn general(gen: &mut GenerateArgs<Self>) -> Result<MatrixSVPair<Self>, GenerateError>;
 
     /// Create a unitary matrix based on the specified arguments.
     fn unitary(gen: &mut GenerateArgs<Self>) -> Result<Array<Self, Ix2>, GenerateError>;
@@ -94,13 +98,10 @@ impl <T: MG> GenerateArgs<T> {
 
         // We need at least as many values as the rank of the
         // matrix when exact values are provided.
-        match self.values {
-            ValuesOption::Exact(ref v) => {
-                if v.len() < self.rank() {
-                    return Err(GenerateError::NotEnoughValues);
-                }
-            },
-            _ => { }
+        if let ValuesOption::Exact(ref v) = self.values {
+            if v.len() < self.rank() {
+                return Err(GenerateError::NotEnoughValues);
+            }
         }
 
         Ok(())
@@ -145,7 +146,7 @@ impl <T: MG> GenerateArgs<T> {
         // Take the absolute value for positive or non-symmetric
         // matrices.
         if self.symmetry != GenerateSymmetry::Symmetric {
-            for x in values.iter_mut() {
+            for x in &mut values {
                 *x = x.abs();
             }
         }
@@ -161,7 +162,7 @@ macro_rules! impl_mat_gen {
     ($impl_type:ty, $gen_gen:ident, $ortho_gen:ident) => (
         impl MG for $impl_type {
             fn general(gen: &mut GenerateArgs<Self>)
-                       -> Result<(Array<Self, Ix2>, Array<Self::RealPart, Ix1>), GenerateError> {
+                       -> Result<MatrixSVPair<Self>, GenerateError> {
                 /// Validate the option inputs.
                 try!(gen.validate());
 
@@ -340,7 +341,7 @@ impl <T: MG> RandomSemiPositive<T> {
     }
 
     /// Generate a matrix matching the specifications, and singular values
-    pub fn generate_with_sv(&mut self) -> Result<(Array<T, Ix2>, Array<T::RealPart, Ix1>), GenerateError> {
+    pub fn generate_with_sv(&mut self) -> Result<MatrixSVPair<T>, GenerateError> {
         MG::general(&mut self.args)
     }
 
@@ -456,7 +457,7 @@ impl <T: MG> RandomSymmetric<T> {
     /// eigenvalues of the generated matrix.
     ///
     /// The returned eigenvalues include any changes made
-    pub fn generate_with_ev(&mut self) -> Result<(Array<T, Ix2>, Array<T::RealPart, Ix1>), GenerateError> {
+    pub fn generate_with_ev(&mut self) -> Result<MatrixSVPair<T>, GenerateError> {
         MG::general(&mut self.args)
     }
 }
@@ -574,7 +575,7 @@ impl <T: MG> RandomGeneral<T> {
     }
 
     /// Generate a matrix
-    pub fn generate_with_sv(&mut self) -> Result<(Array<T, Ix2>, Array<T::RealPart, Ix1>), GenerateError> {
+    pub fn generate_with_sv(&mut self) -> Result<MatrixSVPair<T>, GenerateError> {
         MG::general(&mut self.args)
     }
 }

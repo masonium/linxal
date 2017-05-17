@@ -94,7 +94,7 @@ pub fn is_unitary_tol<T: LinxalImplScalar, D: Data<Elem=T>>(mat: &ArrayBase<D, I
     if !is_square_size(&mat.raw_dim()) {
         return false;
     }
-    let prod = mat.dot(&conj_t(&mat));
+    let prod = mat.dot(&conj_t(mat));
     is_identity_tol(&prod, tol)
 }
 
@@ -131,7 +131,7 @@ pub fn is_triangular<T, D>(mat: &ArrayBase<D, Ix2>, uplo: Symmetric)
     where T: LinxalImplScalar,
           D: Data<Elem=T> {
 
-    is_triangular_tol(mat, uplo, default_tol(&mat))
+    is_triangular_tol(mat, uplo, default_tol(mat))
 }
 
 /// Return the lower bandwidth of the matrix, within the specified
