@@ -168,13 +168,15 @@ macro_rules! impl_qr {
                     tau.resize(cmp::min(dim.0, dim.1), <$qr_type as Zero>::zero());
 
                     // workspace query
-                    ($qr_func(layout,
-                            dim.0 as i32,
-                            dim.1 as i32,
-                            &mut slice,
-                            lda as i32,
-                            &mut tau),
-                     tau)
+                    unsafe {
+                        ($qr_func(layout,
+                                  dim.0 as i32,
+                                  dim.1 as i32,
+                                  &mut slice,
+                                  lda as i32,
+                                  &mut tau),
+                         tau)
+                    }
                 };
 
                 if info == 0 {
@@ -207,13 +209,15 @@ macro_rules! impl_qr {
                         Some(fwd) => fwd,
                     };
 
-                    $qr_to_q(layout,
-                           m as i32,
-                           k as i32,
-                           cmp::min(k, n) as i32,
-                           slice,
-                           ldq as i32,
-                           tau)
+                    unsafe {
+                        $qr_to_q(layout,
+                                 m as i32,
+                                 k as i32,
+                                 cmp::min(k, n) as i32,
+                                 slice,
+                                 ldq as i32,
+                                 tau)
+                    }
                 };
                 if info == 0 {
                     Ok(q)

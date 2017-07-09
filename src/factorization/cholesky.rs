@@ -71,11 +71,13 @@ macro_rules! impl_cholesky {
                     };
 
                     // workspace query
-                    $chol_func(layout,
-                                uplo as u8,
-                                dim.0 as i32,
-                                &mut slice,
-                                lda as i32)
+                    unsafe {
+                        $chol_func(layout,
+                                   uplo as u8,
+                                   dim.0 as i32,
+                                   &mut slice,
+                                   lda as i32)
+                    }
                 };
 
                 if info == 0 {

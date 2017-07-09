@@ -73,8 +73,10 @@ macro_rules! impl_perm {
                         Some(fwd) => fwd
                     };
 
-                    $perm_func(layout, n as i32, slice, lda as i32, 1, ipiv.len() as i32,
-                               ipiv, 1)
+                    unsafe {
+                        $perm_func(layout, n as i32, slice, lda as i32, 1, ipiv.len() as i32,
+                                   ipiv, 1)
+                    }
                 };
 
                 if info == 0 {

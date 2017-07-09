@@ -61,10 +61,12 @@ macro_rules! impl_eigen_real {
                 let vl_opt = (if compute_left {'V'} else {'N'}) as u8;
                 let vr_opt = (if compute_right {'V'} else {'N'}) as u8;
 
-                let info = $func(layout, vl_opt, vr_opt, n, data_slice,
-                                 ld as i32, &mut values_real, &mut values_imag,
-                                 vl.as_slice_mut().unwrap(), n,
-                                 vr.as_slice_mut().unwrap(), n);
+                let info = unsafe {
+                    $func(layout, vl_opt, vr_opt, n, data_slice,
+                          ld as i32, &mut values_real, &mut values_imag,
+                          vl.as_slice_mut().unwrap(), n,
+                          vr.as_slice_mut().unwrap(), n)
+                };
 
                 if info == 0 {
                     let vals: Vec<_> = values_real.iter().zip(values_imag.iter())
@@ -116,11 +118,13 @@ macro_rules! impl_eigen_complex {
                 let vl_opt = (if compute_left {'V'} else {'N'}) as u8;
                 let vr_opt = (if compute_right {'V'} else {'N'}) as u8;
 
-                let info = $func(layout, vl_opt, vr_opt, n,
-                                 data_slice, ld as i32,
-                                 values.as_slice_mut().unwrap(),
-                                 vl.as_slice_mut().unwrap(), n,
-                                 vr.as_slice_mut().unwrap(), n);
+                let info = unsafe {
+                    $func(layout, vl_opt, vr_opt, n,
+                          data_slice, ld as i32,
+                          values.as_slice_mut().unwrap(),
+                          vl.as_slice_mut().unwrap(), n,
+                          vr.as_slice_mut().unwrap(), n)
+                };
 
                 if info  == 0 {
                     Ok(Solution {
