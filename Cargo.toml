@@ -52,6 +52,6 @@ default-features = false
 optional = true
 
 [dependencies.netlib-src]
-version = "0.6"
+version = "0.7"
 default-features = false
 optional = true
