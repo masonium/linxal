@@ -222,13 +222,15 @@ macro_rules! impl_lu {
                     perm_i.resize(cmp::min(dim.0, dim.1), -1);
 
                     // workspace query
-                    ($lu_func(layout,
-                              dim.0 as i32,
-                              dim.1 as i32,
-                              &mut slice,
-                              lda as i32,
-                              &mut perm_i),
-                     perm_i)
+                    unsafe {
+                        ($lu_func(layout,
+                                  dim.0 as i32,
+                                  dim.1 as i32,
+                                  &mut slice,
+                                  lda as i32,
+                                  &mut perm_i),
+                         perm_i)
+                    }
                 };
 
                 if info == 0 {
@@ -254,7 +256,9 @@ macro_rules! impl_lu {
                         Some(x) => x,
                     };
 
-                    $lu_invert(layout, dim.0 as i32, &mut slice, lda as i32, &perm)
+                    unsafe {
+                        $lu_invert(layout, dim.0 as i32, &mut slice, lda as i32, &perm)
+                    }
                 };
                 if info == 0 {
                     Ok(mat)

@@ -230,9 +230,11 @@ macro_rules! impl_least_squares {
                         None => return Err(LeastSquaresError::InconsistentLayout)
                     };
 
-                    $full_func(layout, b'N', a_dim.0 as i32 , a_dim.1 as i32, b_dim.1 as i32,
-                               a_slice, lda as i32,
-                               b_slice, ldb as i32)
+                    unsafe {
+                        $full_func(layout, b'N', a_dim.0 as i32 , a_dim.1 as i32, b_dim.1 as i32,
+                                   a_slice, lda as i32,
+                                   b_slice, ldb as i32)
+                    }
                 };
 
                 if info == 0 {
@@ -278,11 +280,13 @@ macro_rules! impl_least_squares {
                         None => return Err(LeastSquaresError::InconsistentLayout)
                     };
 
-                    $degen_func(layout, a_dim.0 as i32 , a_dim.1 as i32, b_dim.1 as i32,
-                                a_slice, lda as i32,
-                                b_slice, ldb as i32,
-                                svs.as_slice_mut().unwrap(), 0.0,
-                                &mut rank)
+                    unsafe {
+                        $degen_func(layout, a_dim.0 as i32 , a_dim.1 as i32, b_dim.1 as i32,
+                                    a_slice, lda as i32,
+                                    b_slice, ldb as i32,
+                                    svs.as_slice_mut().unwrap(), 0.0,
+                                    &mut rank)
+                    }
                 };
 
                 if info == 0 {

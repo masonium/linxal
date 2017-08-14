@@ -1,5 +1,6 @@
 language: rust
 sudo: required
+dist: trusty
 
 rust:
   - stable
@@ -17,7 +18,7 @@ env:
     - FEATURE=openblas
 
 matrix:
-  allow-failures:
+  allow_failures:
     - rust: nightly
 
 script:
@@ -25,9 +26,5 @@ script:
 
 addons:
   apt:
-    sources:
-      - kubuntu-backports
-
     packages:
-      - cmake
       - gfortran

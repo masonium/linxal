@@ -130,7 +130,7 @@ macro_rules! impl_svd {
                 let job_desc = compute_vectors.job_desc();
 
                 let info = match method {
-                    SVDMethod::Normal => {
+                    SVDMethod::Normal => unsafe {
                         let mut superb = Array::default(cmp::min(m, n) - 2);
                         $svd_func(layout, job_desc, job_desc, m as i32, n as i32, slice,
                                   lda as i32, s.as_slice_mut().expect("bad s implementation"),
@@ -138,7 +138,7 @@ macro_rules! impl_svd {
                                   vt.as_slice_mut().expect("bad vt implementation"), n as i32,
                                   superb.as_slice_mut().expect("bad superb implementation"))
                     },
-                    SVDMethod::DivideAndConquer => {
+                    SVDMethod::DivideAndConquer => unsafe {
                         $sdd_func(layout, job_desc, m as i32, n as i32, slice,
                                   lda as i32,
                                   s.as_slice_mut().expect("bad s implementation"),

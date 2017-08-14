@@ -65,8 +65,10 @@ macro_rules! impl_sym_eigen {
                 let mut values = Array::default(n as Ix);
                 let job = if with_vectors { b'V' } else { b'N' };
 
-                let info = $func(layout, job, uplo as u8, n, data_slice,
-                                 ld as i32, values.as_slice_mut().unwrap());
+                let info = unsafe {
+                    $func(layout, job, uplo as u8, n, data_slice,
+                          ld as i32, values.as_slice_mut().unwrap())
+                };
 
                 if info  == 0 {
                     Ok(values)

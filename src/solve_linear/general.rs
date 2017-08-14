@@ -95,10 +95,12 @@ macro_rules! impl_solve_linear {
 
                     let mut perm: Array<i32, Ix1> = Array::default(dim.0);
 
-                    $driver(layout, dim.0 as i32, b_dim.1 as i32,
-                           slice, lda as i32,
-                           perm.as_slice_mut().unwrap(),
-                           b_slice, ldb as i32)
+                    unsafe {
+                        $driver(layout, dim.0 as i32, b_dim.1 as i32,
+                                slice, lda as i32,
+                                perm.as_slice_mut().unwrap(),
+                                b_slice, ldb as i32)
+                    }
                 };
 
                 if info == 0 {
