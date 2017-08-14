@@ -15,7 +15,8 @@ use generate::types::*;
 
 
 /// Newtype for functions retuning a matrix and a set of singular values.
-pub type MatrixSVPair<T: LinxalImplScalar> = (Array<T, Ix2>, Array<T::RealPart, Ix1>);
+#[allow(warnings)]
+pub type MatrixSVPair<T> = (Array<T, Ix2>, Array<<T as LinxalImplScalar>::RealPart, Ix1>);
 
 /// Scalar trait for generating random matrices.
 pub trait MG: LinxalImplScalar {
