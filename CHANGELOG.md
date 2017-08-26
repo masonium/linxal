@@ -1,3 +1,6 @@
+0.7.0:
+ - Update ndarray, netlib-src
+
 0.6.0:
  - Provide `LinxalMatrix` and `LinxalMatrxInto` traits to unify matrix calculations
  - Revamp `LinxalScalar` to unify all individual computational traits
