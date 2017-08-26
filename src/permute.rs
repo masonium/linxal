@@ -68,7 +68,7 @@ macro_rules! impl_perm {
 
 
                 let info = {
-                    let (mut slice, layout, lda) = match slice_and_layout_mut(&mut mat) {
+                    let (slice, layout, lda) = match slice_and_layout_mut(&mut mat) {
                         None => return None,
                         Some(fwd) => fwd
                     };

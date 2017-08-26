@@ -57,7 +57,7 @@ macro_rules! impl_sym_eigen {
 
                 let n = dim.0 as i32;
 
-                let (mut data_slice, layout, ld) = match slice_and_layout_mut(mat) {
+                let (data_slice, layout, ld) = match slice_and_layout_mut(mat) {
                     Some(x) => x,
                     None => return Err(EigenError::BadLayout)
                 };
